@@ -1,13 +1,12 @@
-import pickle
+from ast import literal_eval
 from keyczar.keyczar import Crypter
 import keyczar.errors
 
-from exceptions import SecureConfigException, ReadOnlyConfigError
+from exceptions import *
 
 __author__ = 'nthmost'
 
-__doc__ = '''SecureConfig and SecureJson classes for simplifying load of 
-encrypted json and .ini files.
+__doc__ = '''SecureConfig base class for simplifying load of encrypted config files (default: pickle).
 
     Features:
     * Instantiate with either a file path or a string of text.
@@ -16,20 +15,11 @@ encrypted json and .ini files.
     * ConfigParser-like interface via .get(section, param) method.
     * Default readonly=True protects configuration and "forgets" keyloc.
     * Supply readonly=False to allow use of .set() method.
+    
+    SecureConfig base class uses only serialized python dictionaries.
 
-    Future:
-    * Ability to store new config via .write() method.
+    If you want Json specifically, use SecureJson.
 '''
-
-
-class SecureConfigException(Exception):
-    def __init__(self, message, Errors):
-        Exception.__init__(self, message)
-        self.Errors = Errors
-
-class ReadOnlyConfigError(SecureConfigException):
-    pass
-
 
 class SecureConfig(object):
     def __init__(self, filepath='', rawtxt='', keyloc='', readonly=True):
@@ -77,7 +67,7 @@ class SecureConfig(object):
         return self.crypter.Encrypt(buf)
 
     def _fill(self, txt=''):
-        raise NotImplementedError
+        self.cfg = literal_eval(txt)
 
     def _read(self, filepath):
         return open(filepath, "rb" )
@@ -113,13 +103,17 @@ class SecureConfig(object):
         if self.readonly:
             raise ReadOnlyConfigError
 
-        enctxt = self._encrypt(self._serialize())
+        try:
+            buf = self._encrypt(self._serialize())
+        except AttributeError:
+            # no self.crypter because no keyloc supplied
+            buf = self._serialize()
 
         if filepath=='':
             filepath = self.filepath
 
-        f=open(filepath, 'w')
-        f.write(enctxt)
+        f=open(filepath, 'wb')
+        f.write(buf)
         f.close()
 
     def _serialize(self):

@@ -9,3 +9,4 @@ ve
 dist
 *.egg-info
 build
+keys/
