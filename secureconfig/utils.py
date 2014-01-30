@@ -4,23 +4,35 @@ from keyczar import keyczar, keyczart
 from keyczar.errors import KeyczarError
 
 
-FMT_CREATE = 'create --location=%(loc)s --purpose=crypt'
-FMT_ADDKEY = 'addkey --location=%(loc)s --status=primary'
-
+KEYCZAR_CREATE = 'create --location=%(loc)s --purpose=crypt'
+KEYCZAR_ADDKEY = 'addkey --location=%(loc)s --status=primary'
 
 def initialize_keys(keyloc):
-    _require_dir(keyloc)
-    pass
+    _initialize(keyloc)
 
 def encrypt_file(keyloc, infile, outfile=''):
-    f=open(infile, 'rb')
-    crypter = keyczar.Crypter.Read(keyloc)
-
+    enctxt = encrypt(keyloc, open(infile, 'r').read())
+    f=open(outfile, 'wb')
+    f.write(enctxt)
+    f.close()
 
 def decrypt_file(keyloc, infile, outfile=''):
-    crypter = keyczar.Crypter.Read(keyloc)
-    
+    txt = decrypt(open(infile, 'rb').read())
+    if outfile:
+        f=open(outfile, 'w')
+        f.write(txt)
+        f.close()     
+        return outfile
+    else:
+        return txt
 
+def encrypt(keyloc, inp):
+    crypter = keyczar.Crypter.Read(keyloc)
+    return crypter.Encrypt(inp)
+
+def decrypt(keyloc, inp):
+    crypter = keyczar.Crypter.Read(keyloc)
+    return crypter.Decrypt(inp)
 
 def _require_dir(keyloc):
     '''Make sure that keyloc is a directory.
@@ -48,7 +60,11 @@ def _initialize(keyloc, **kwds):
     _require_dir(keyloc)
     steps = [KEYCZAR_CREATE, KEYCZAR_ADDKEY]
     for step in steps:
-        _tool(step, loc=loc, **kwds)
+        _tool(step, loc=keyloc, **kwds)
 
 
+if __name__=='__main__':
+    KEYLOC = 'keys'
+    #initialize_keys(KEYLOC)
+    encrypt_file('keys', 'sample_plain.txt', 'sample_enc.txt')
 
