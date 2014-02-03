@@ -6,7 +6,7 @@ from exceptions import *
 
 __author__ = 'nthmost'
 
-__doc__ = '''SecureConfig base class for simplifying load of encrypted config files (default: pickle).
+__doc__ = '''SecureConfig base class for simplifying load of encrypted config files (default: serialized dict).
 
     Features:
     * Instantiate with either a file path or a string of text.
@@ -22,8 +22,7 @@ __doc__ = '''SecureConfig base class for simplifying load of encrypted config fi
 '''
 
 class SecureConfig(object):
-    def __init__(self, filepath='', rawtxt='', keyloc='', readonly=True):
-        '''Builds a SecureConfig object. Requires at minimum a filename or a rawtxt argument.
+    '''Builds a SecureConfig object. Requires at minimum a filename or a rawtxt argument.
         
         `readonly` param ensures that .set() and .write() cannot be used.  Also ensures that 
         only the resultant configuration structure remains in memory. When readonly=False, 
@@ -34,10 +33,12 @@ class SecureConfig(object):
         :param filepath:   absolute or relative path to real file on disk.
         :param rawtxt:     string containing encrypted configuration string.
         :param keyloc:     directory location of keyczar managed keys.
-        :param readonly:   whether to protect config from being overwritten.
+        :param readonly:   protects source config from .write() (default: True)
 
         :return: SecureConfig object with .cfg dictionary.
-        '''
+    '''
+
+    def __init__(self, filepath='', rawtxt='', keyloc='', readonly=True):
 
         self.cfg = {}
         self.readonly = readonly
@@ -99,7 +100,6 @@ class SecureConfig(object):
             self.cfg[section][param] = value
 
     def write(self, filepath=''):
-        'not yet implemented'
         if self.readonly:
             raise ReadOnlyConfigError
 
