@@ -55,10 +55,15 @@ if __name__=='__main__':
     "cat": "hat"
 }"""
 
-    sjson = SecureJson(rawtxt=testjson, keyloc='keys', readonly=False)
+    sjson = SecureJson(rawtxt=testjson, keyloc='.keys', readonly=False)
 
     sjson.cfg['wet blanket'] = 'the fish'
 
     print sjson
     
-    sjson.write
+    sjson.write("test_securejson.json.enc")
+
+    newjson = SecureJson(filepath="test_securejson.json.enc", keyloc=".keys", readonly=True)
+    print newjson.cfg
+    
+
