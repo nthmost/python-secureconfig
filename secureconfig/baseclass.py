@@ -30,7 +30,7 @@ class SecureConfig(object):
 
         Note: rawtxt / result of open(filepath).read() will never be stored.
 
-        :param filepath:   absolute or relative path to real file on disk.
+        :param filepath:   absolute or relative path to real file on disk (overrides rawtxt).
         :param rawtxt:     string containing encrypted configuration string.
         :param keyloc:     directory location of keyczar managed keys.
         :param readonly:   protects source config from .write() (default: True)
