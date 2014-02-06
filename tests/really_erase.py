@@ -19,7 +19,7 @@ def zerome(string):
     header = ctypes.string_at(id(temp), sys.getsizeof(temp)).find(temp)
  
     location = id(string) + header
-    size     = sys.getsizeof(string) - header
+    size     = sys.getsizeof(string) - header  
  
     if platform.system() == 'Windows':
         memset =  ctypes.cdll.msvcrt.memset
