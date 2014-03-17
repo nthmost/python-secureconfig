@@ -1,0 +1,5 @@
+Cython
+Pyrex
+pyasn1
+pycrypto
+python-keyczar

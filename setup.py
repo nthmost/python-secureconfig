@@ -17,6 +17,7 @@ setup(
     license = "MIT",
     zip_safe = True,
     packages = find_packages(),
-    install_requires = [ 'python-keyczar',
+    install_requires = [
+                         'python-keyczar',
                         ],
     )
