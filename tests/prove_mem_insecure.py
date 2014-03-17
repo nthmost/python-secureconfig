@@ -15,9 +15,9 @@ SYSTEM_OS = platform.system()
 
 def zerome(string):
     # find the header size with a dummy string
-    temp = "finding offset"
-    header = ctypes.string_at(id(temp), sys.getsizeof(temp)).find(temp)
- 
+    dummy = "header finder"
+    header = ctypes.string_at(id(dummy), sys.getsizeof(dummy)).find(dummy)
+
     location = id(string) + header
     size     = sys.getsizeof(string) - header  
  
