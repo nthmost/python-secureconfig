@@ -3,12 +3,23 @@ import os
 from keyczar import keyczar, keyczart
 from keyczar.errors import KeyczarError
 
-
 KEYCZAR_CREATE = 'create --location=%(loc)s --purpose=crypt'
 KEYCZAR_ADDKEY = 'addkey --location=%(loc)s --status=primary'
 
-def initialize_keys(keyloc):
-    _initialize(keyloc)
+def initialize_keys(keyloc, name="Test"):
+    _initialize(keyloc, name=name)
+
+def keydir_status(keyloc):
+    if os.path.exists(keyloc):
+        if not os.path.isdir(keyloc):
+            return "Key directory does not exist"
+    try:
+        test = keyczar.Crypter(keyloc)
+    except:
+        return "Bad keys or no keys initialized"
+
+    return "OK"
+    
 
 def encrypt_file(keyloc, infile, outfile=''):
     enctxt = encrypt(keyloc, open(infile, 'r').read())
@@ -67,4 +78,3 @@ if __name__=='__main__':
     KEYLOC = 'keys'
     #initialize_keys(KEYLOC)
     encrypt_file('keys', 'sample_plain.txt', 'sample_enc.txt')
-
