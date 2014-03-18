@@ -2,24 +2,50 @@ from setuptools import setup, find_packages
 #from distutils.extension import Extension
 from distutils.core import Extension
 
-from Cython.Distutils import build_ext
+try:
+    from Cython.Distutils import build_ext
+except ImportError:
+    use_cython = False
+else:
+    use_cython = True
 
-setup(
+cmdclass = {}
+ext_modules = []
+
+# make sure Cython code is always freshened up before sdist upload.
+from distutils.command.sdist import sdist as _sdist
+
+class sdist(_sdist):
+    def run(self):
+        # Make sure the compiled Cython files in the distribution are up-to-date
+        from Cython.Build import cythonize
+        print "cythonizing..."
+        cythonize(['cython/mycythonmodule.pyx'])
+        _sdist.run(self)
+cmdclass['sdist'] = sdist
+
+if use_cython:
+    ext_modules += [ Extension('secureconfig.zeromem', sources=['secureconfig/zeromem.pyx']), ]
+    cmdclass.update({ 'build_ext': build_ext })
+else:
+    ext_modules += [ Extension('secureconfig.zeromem', sources=['secureconfig/zeromem.c']), ]
+
+
+setup (
     name = "secureconfig",
     version = "0.0.1",
     description = "Configuration-oriented encryption toolkit to make secure config files simple",
     url="https://bitbucket.org/nthmost/python-secureconfig",
-    cmdclass = {'build_ext': build_ext},
     author = "Naomi Most",
     author_email = "naomi@nthmost.net",
     maintainer = "Naomi Most",
     maintainer_email = "naomi@nthmost.net",
-    ext_modules=[Extension('zeromem', sources=['secureconfig/zeromem.c'])],
+    cmdclass = cmdclass,
     license = "MIT",
     zip_safe = True,
     packages = find_packages(),
     install_requires = [
-                         'Cython',
                          'python-keyczar',
                         ],
     )
+
