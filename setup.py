@@ -5,6 +5,7 @@ from distutils.core import Extension
 try:
     from Cython.Distutils import build_ext
 except ImportError:
+    from distutils.command import build_ext
     use_cython = False
 else:
     use_cython = True
@@ -27,6 +28,7 @@ cmdclass['sdist'] = sdist
 if use_cython:
     ext_modules += [ Extension('secureconfig.zeromem', sources=['secureconfig/zeromem.pyx']), ]
     cmdclass.update({ 'build_ext': build_ext })
+    print cmdclass
 else:
     ext_modules += [ Extension('secureconfig.zeromem', sources=['secureconfig/zeromem.c']), ]
 
@@ -41,6 +43,7 @@ setup (
     maintainer = "Naomi Most",
     maintainer_email = "naomi@nthmost.net",
     cmdclass = cmdclass,
+    ext_modules = ext_modules,
     license = "MIT",
     zip_safe = True,
     packages = find_packages(),
