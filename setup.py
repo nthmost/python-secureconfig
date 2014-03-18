@@ -9,7 +9,7 @@ setup(
     version = "0.0.1",
     description = "Configuration-oriented encryption toolkit to make secure config files simple",
     url="https://bitbucket.org/nthmost/python-secureconfig",
-    cmdclass=   {'build_ext': build_ext},
+    cmdclass = {'build_ext': build_ext},
     author = "Naomi Most",
     author_email = "naomi@nthmost.net",
     maintainer = "Naomi Most",
@@ -19,6 +19,7 @@ setup(
     zip_safe = True,
     packages = find_packages(),
     install_requires = [
+                         'Cython',
                          'python-keyczar',
                         ],
     )

@@ -1,5 +1,5 @@
 Cython
-Pyrex
+#Pyrex
 pyasn1
 pycrypto
-python-keyczar
+python-keyczar>=0.71c
