@@ -71,7 +71,7 @@ class SecureConfig(object):
         self.cfg = literal_eval(txt)
 
     def _read(self, filepath):
-        return open(filepath, "rb" )
+        return open(filepath, "rb" ).read()
 
     def get(self, section, param):
         '''provides ConfigParser-like interface retrieve variables from sections.

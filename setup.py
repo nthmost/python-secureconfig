@@ -4,9 +4,9 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 setup(
-    name = "python-secureconfig",
+    name = "secureconfig",
     version = "0.0.1",
-    description = "SecureConfig toolkit making encrypted config files easy.",
+    description = "Configuration-oriented encryption toolkit to make secure config files simple",
     url="https://bitbucket.org/nthmost/python-secureconfig",
     cmdclass=   {'build_ext': build_ext},
     author = "Naomi Most",

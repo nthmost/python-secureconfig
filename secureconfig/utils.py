@@ -14,8 +14,8 @@ def keydir_status(keyloc):
         if not os.path.isdir(keyloc):
             return "Key directory does not exist"
     try:
-        test = keyczar.Crypter(keyloc)
-    except:
+        test = keyczar.Crypter.Read(keyloc)
+    except KeyczarError:
         return "Bad keys or no keys initialized"
 
     return "OK"
