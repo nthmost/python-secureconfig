@@ -48,7 +48,7 @@ setup (
     zip_safe = True,
     packages = find_packages(),
     install_requires = [
-                         'python-keyczar',
+                         'python-keyczar>=0.71c',
                         ],
     )
 
