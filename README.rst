@@ -12,9 +12,13 @@ a "medium paranoia" set of operations.
 
 Those choices, specifically::
 
- * use AES-256 (so, symmetric enc only, for the moment)
- * 
+   Use AES-256 (so, symmetric enc only, for the moment).
+   Store keys in files protected by the operating system.
 
+See "Future" section for more information on what's planned for this library.
+
+This library has a LOT of work left to do in it (it's way below my standards of 
+user-friendliness and reliability), so please consider secureconfig VERY ALPHA.
 
 Purpose
 -------
@@ -57,20 +61,16 @@ system.  If you let secureconfig create directories for storing your keys, they
 will be created with restrictive (chmod 0700) permissions.
 
 secureconfig aspires to being more versatile, but right now the things you can
-do with it are as follows::
+do with it are as follows:
 
-    * automate the secure creation, storage, and deployment of encryption
-    keys, particularly in conjunction with Fabric (see secureconfig.utils)
-
-    * encrypt whole config files in JSON and abstract away the process of decrypting
-    and loading the configuration into a dictionary (see secureconfig.securejson)
-
-    * completely zero-out the memory location where passwords and other sensitive
-    information was stored in memory during the usage of credentials. 
-    (see secureconfig.zeromem)
+- automate the secure creation, storage, and deployment of encryption keys, particularly in conjunction with Fabric (see secureconfig.utils)
+- encrypt whole config files in JSON and abstract away the process of decrypting and loading the configuration into a dictionary (see secureconfig.securejson)
+- completely zero-out the memory location where passwords and other sensitive information was stored in memory during the usage of credentials.  (see secureconfig.zeromem)
 
 
-Basic usage::
+Basic usage:
+
+.. code-block:: python
 
     from secureconfig import SecureJson, zeromem
 
@@ -97,11 +97,11 @@ Future
 
 Planned features include::
 
-* SecureConfigParser (ConfigParser subclass supporting line-based encrypted variables)
-* running in "paranoid mode" (e.g. refusing to use keys not stored in locked-down locations)
-* more backgrounded usage of zeromem to prevent memory dump attacks.
-* more automated-deployment-oriented utils
-* asymmetric key deployments (e.g. DSA public key encryption)
+- SecureConfigParser (ConfigParser subclass supporting line-based encrypted variables)
+- running in "paranoid mode" (e.g. refusing to use keys not stored in locked-down locations)
+- more backgrounded usage of zeromem to prevent memory dump attacks.
+- more automated-deployment-oriented utils
+- asymmetric key deployments (e.g. DSA public key encryption)
 
 There is currently no support for writing config files (as ConfigParser lets
 you do), but that might be on the horizon.
