@@ -1,0 +1,2 @@
+0.0.1, first public release. coverage limited to SecureJson and deployment-oriented utils.
+0.0.2, added safe_pwgen to utils. actual for-real README this time.
