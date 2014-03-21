@@ -1,10 +1,19 @@
-import os
+import os, string
+from random import sample, choice
 
 from keyczar import keyczar, keyczart
 from keyczar.errors import KeyczarError
 
 KEYCZAR_CREATE = 'create --location=%(loc)s --purpose=crypt'
 KEYCZAR_ADDKEY = 'addkey --location=%(loc)s --status=primary'
+
+ACCEPTED_SYMBOLS = '_-)(&^#@!.'
+
+def safe_pwgen(length=32, symbols=ACCEPTED_SYMBOLS):
+    '''returns a non-human-readable password of length=length (default 32) and 
+        symbols as desired default ACCEPTED_SYMBOLS:  _-)(&^#@!.'''
+    chars = string.letters + string.digits + symbols
+    return ''.join(choice(chars) for _ in range(length))
 
 def initialize_keys(keyloc, name="Test"):
     _initialize(keyloc, name=name)
@@ -78,3 +87,4 @@ if __name__=='__main__':
     KEYLOC = 'keys'
     #initialize_keys(KEYLOC)
     encrypt_file('keys', 'sample_plain.txt', 'sample_enc.txt')
+
