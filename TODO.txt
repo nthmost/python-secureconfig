@@ -1,0 +1,6 @@
+1. start using cryptography.io instead of keyczar
+2. restructure SecureConfig class to allow key retrieval from env variables, files, input string.
+3. implement SecureConfigParser
+4. implement command-line / fabric tools for cryptography.io
+5. implement in-library methods of generating secrets and writing config files.
+
