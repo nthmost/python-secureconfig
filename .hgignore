@@ -12,3 +12,6 @@ build
 .keys/
 *.so
 MANIFEST
+examples/
+*.txt
+*.ipynb
