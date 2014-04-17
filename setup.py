@@ -2,6 +2,9 @@ from setuptools import setup, find_packages
 #from distutils.extension import Extension
 from distutils.core import Extension
 
+import os
+os.environ['ARCHFLAGS'] = '-Wno-error=unused-command-line-argument-hard-error-in-future'
+
 try:
     from Cython.Distutils import build_ext
 except ImportError:
@@ -47,8 +50,6 @@ setup (
     license = "MIT",
     zip_safe = True,
     packages = find_packages(),
-    install_requires = [
-                         'cryptography'
-                        ],
+    setup_requires = [ ],
     )
 
