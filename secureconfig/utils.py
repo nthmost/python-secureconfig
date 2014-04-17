@@ -15,7 +15,7 @@ def safe_pwgen(length=32, symbols=ACCEPTED_SYMBOLS):
     chars = string.letters + string.digits + symbols
     return ''.join(choice(chars) for _ in range(length))
 
-def encrypt_file(ck_obj)
+def encrypt_file(ck_obj, infile, outfile):
     enctxt = ck_obj.encrypt(open(infile, 'r').read())
     f=open(outfile, 'wb')
     f.write(enctxt)

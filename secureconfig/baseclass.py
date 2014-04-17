@@ -1,7 +1,6 @@
 from ast import literal_eval
-from keyczar.keyczar import Crypter
-import keyczar.errors
 
+from cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper
 from exceptions import *
 
 __author__ = 'nthmost'
@@ -38,13 +37,26 @@ class SecureConfig(object):
         :return: SecureConfig object with .cfg dictionary.
     '''
 
-    def __init__(self, filepath='', rawtxt='', keyloc='', readonly=True):
+    @classmethod
+    def from_env(cls, env, filepath='', rawtxt='', readonly=True, **kwargs):
+        ck_obj = EnvCryptKeeper(env)
+        return cls.__init__(ck_obj, *args, **kwargs)
+
+    @classmethod
+    def from_file(cls, keyfilename, filepath='', rawtxt='', readonly=True, **kwargs):
+        ck_obj = FileCryptKeeper(keyfilename)
+        return cls.__init__(ck_obj, *args, **kwargs)
+
+    @classmethod
+    def from_key(cls, keystring, *args, **kwargs):
+        ck_obj = CryptKeeper(keystring)
+        return cls.__init__(ck_obj, *args, **kwargs)
+
+    def __init__(self, ck_obj=None, filepath='', rawtxt='', readonly=True):
 
         self.cfg = {}
         self.readonly = readonly
-
-        if not readonly:
-            self.keyloc = keyloc
+        self.ck = self.ck_obj
 
         if filepath and rawtxt:
             raise SecureConfigException("Supply either filepath or rawtxt (not both).")
@@ -52,20 +64,21 @@ class SecureConfig(object):
         if filepath:
             rawtxt = self._read(filepath)
 
-        if keyloc:
-            try:
-                self.crypter = Crypter.Read(keyloc)
-                self._fill(self._decrypt(rawtxt))
-            except keyczar.errors.Base64DecodingError, e:
-                raise SecureConfigException("Supplied string was not encrypted.", [keyczar.errors.Base64DecodingError])
-        else:
+        #TODO: work out more specific Exceptions
+        try:
+            self._fill(self._decrypt(rawtxt))
+        except Exception as e:
+            # if self.ck is None or rawtxt is not encrypted
             self._fill(rawtxt)
+        finally:
+            
+
 
     def _decrypt(self, buf):
-        return self.crypter.Decrypt(buf)
+        return self.ck.crypter.decrypt(buf)
 
     def _encrypt(self, buf):
-        return self.crypter.Encrypt(buf)
+        return self.ck.crypter.encrypt(buf)
 
     def _fill(self, txt=''):
         self.cfg = literal_eval(txt)
@@ -76,7 +89,7 @@ class SecureConfig(object):
     def get(self, section, param):
         '''provides ConfigParser-like interface retrieve variables from sections.
 
-        If you config data is shallow, i.e. non-hierarchical, either a TypeError
+        If your config data is shallow, i.e. non-hierarchical, either a TypeError
         or a NameError will be thrown (depending on your data).
 
         :param section:  top-level "section" of configuration.

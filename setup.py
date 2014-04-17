@@ -35,7 +35,7 @@ else:
 
 setup (
     name = "secureconfig",
-    version = "0.0.3.0",
+    version = "0.0.3.1",
     description = "Configuration-oriented encryption toolkit to make secure config files simple",
     url="https://bitbucket.org/nthmost/python-secureconfig",
     author = "Naomi Most",
@@ -48,7 +48,7 @@ setup (
     zip_safe = True,
     packages = find_packages(),
     install_requires = [
-                         'python-keyczar>=0.71c',
+                         'cryptography'
                         ],
     )
 
