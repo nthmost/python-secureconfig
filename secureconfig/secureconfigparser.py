@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from configparser import ConfigParser
+from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from cryptkeeper import EnvCryptKeeper, FileCryptKeeper
 
@@ -30,30 +30,29 @@ class SecureConfigParser(ConfigParser):
             self.ck = FileCryptKeeper(path=kwargs['keypath'])
         else:
             self.ck = None
-    
-        ConfigParser.ConfigParser.__init__(self, *args, **kwargs)
+        super(SecureConfigParser, self).__init__(*args, **kwargs)
     
     def read(self, filenames):
         '''Read the list of config files.'''
-        #print("[DEBUG] filenames: ", filenames)
-        return ConfigParser.ConfigParser.read(self,filenames)
+        print("[DEBUG] filenames: ", filenames)
+        super(SecureConfigParser, self).read(filenames)
 
     def raw_get(self, sec, key, default=None):
         '''Get the raw value without decoding it.'''
         try:
-            return ConfigParser.ConfigParser.get(self, sec, key)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            return super(SecureConfigParser, self).get(sec, key)
+        except (NoSectionError, NoOptionError):
             return default
         except Exception as e:
             print("[DEBUG] e=", sys.exc_info()[0])
 
-    def raw_set(self, sec, key, val):
-        '''Set the value without encoding it.'''
-        return ConfigParser.ConfigParser.set(self, sec, key, val)
+#    def raw_set(self, sec, key, val):
+#        '''Set the value without encoding it.'''
+#        return ConfigParser.set(self, sec, key, val)
 
-    def raw_items(self, sec):
-        '''Return the items in a section without decoding the values.'''
-        return ConfigParser.ConfigParser.items(self, sec)
+#    def raw_items(self, sec):
+#        '''Return the items in a section without decoding the values.'''
+#        return ConfigParser.items(self, sec)
 
     def val_decrypt(self, raw_val, **kwargs):
         '''Decode the value.'''
