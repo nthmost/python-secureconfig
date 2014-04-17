@@ -1,22 +1,28 @@
 from __future__ import print_function
 
-from configparser import ConfigParser, NoSectionError, NoOptionError
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 from cryptkeeper import EnvCryptKeeper, FileCryptKeeper
 
 # SECURECONFIG pattern:
-#  - allow key retrieval and storage from KEY_STORE object
+#  - allow key retrieval and storage from CryptKeeper object
 #  - default to symmetric keys using AES (via Fernet)
 #  - (future) provide asymmetric encryption using RSA 
-
 
 # SECURECONFIGPARSER pattern:
 #  - read list of files
 #  - read and interpolate vars
 #  - has .crypter attribute -> CryptKeeper object
-
+#
 # sec == section
 
+
+def test_args(*args, **kwargs):
+    print(args)
+    print(kwargs)
+
+# ConfigParser is an "old style" class, so we're using old-style calls to super
+# until ConfigParser gets its act together.
 
 class SecureConfigParser(ConfigParser):
     '''A subclass of ConfigParser py:class::ConfigParser which decrypts certain entries.'''
@@ -30,17 +36,21 @@ class SecureConfigParser(ConfigParser):
             self.ck = FileCryptKeeper(path=kwargs['keypath'])
         else:
             self.ck = None
-        super(SecureConfigParser, self).__init__(*args, **kwargs)
+        
+        ConfigParser.__init__(self, *args, **kwargs)
+        #super(SecureConfigParser, self).__init__(*args, **kwargs)
     
     def read(self, filenames):
         '''Read the list of config files.'''
         print("[DEBUG] filenames: ", filenames)
-        super(SecureConfigParser, self).read(filenames)
+        ConfigParser.read(self, filenames)
+        #super(SecureConfigParser, self).read(filenames)
 
     def raw_get(self, sec, key, default=None):
         '''Get the raw value without decoding it.'''
         try:
-            return super(SecureConfigParser, self).get(sec, key)
+            return ConfigParser.get(self, sec, key)
+            #return super(SecureConfigParser, self).get(sec, key)
         except (NoSectionError, NoOptionError):
             return default
         except Exception as e:
@@ -48,11 +58,11 @@ class SecureConfigParser(ConfigParser):
 
 #    def raw_set(self, sec, key, val):
 #        '''Set the value without encoding it.'''
-#        return ConfigParser.set(self, sec, key, val)
+#        return super(SecureConfigParser, self).set(self, sec, key, val)
 
 #    def raw_items(self, sec):
 #        '''Return the items in a section without decoding the values.'''
-#        return ConfigParser.items(self, sec)
+#        return super(SecureConfigParser, self).items(self, sec)
 
     def val_decrypt(self, raw_val, **kwargs):
         '''Decode the value.'''
