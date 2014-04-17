@@ -18,21 +18,22 @@ __doc__ = '''SecureJson class for simplifying load of encrypted config files.
 class SecureJson(SecureConfig):
     '''Builds a SecureJson object. Requires at minimum a filename or a rawtxt argument.
         
-        `readonly` param ensures that .set() and .write() cannot be used. Also ensures that 
-        only the resultant configuration structure (not the secrets) remains in memory. When 
-        readonly=False, keyloc is retained so that a new encrypted configuration can be created. 
-        
-        If you don't supply a keyloc, SecureConfig will attempt to read the file as if it
+        __init__ requires that you supply a CryptKeeper object, but you can have this part
+        handled for you by using the from_env, from_file, and from_key class methods.
+
+        `readonly` param ensures that .set() and .write() cannot be used. 
+
+        If ck_obj==None, SecureConfig will attempt to read the file as if it
         were stored in plaintext and throw an error if it was encrypted.
 
         Note: rawtxt / result of open(filepath).read() will never be stored.
 
+        :param ck_obj:     CryptKeeper object (see notes about class methods) 
         :param filepath:   absolute or relative path to real file on disk.
         :param rawtxt:     string containing encrypted configuration string.
-        :param keyloc:     directory location of keyczar managed keys (default: None)
         :param readonly:   protects source config from .write() (default: True)
 
-        :return: SecureConfig object with .cfg dictionary.
+        :return: SecureJson object with .cfg dictionary.
     '''
     
     def _fill(self, txt):
@@ -43,7 +44,6 @@ class SecureJson(SecureConfig):
 
     def to_json(self):
         return dumps(self.cfg)
-
 
 
 if __name__=='__main__':
