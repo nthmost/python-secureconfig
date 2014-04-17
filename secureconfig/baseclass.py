@@ -70,9 +70,6 @@ class SecureConfig(object):
         except Exception as e:
             # if self.ck is None or rawtxt is not encrypted
             self._fill(rawtxt)
-        finally:
-            
-
 
     def _decrypt(self, buf):
         return self.ck.crypter.decrypt(buf)
