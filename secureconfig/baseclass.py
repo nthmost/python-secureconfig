@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import
 
 from ast import literal_eval
 
+from .zeromem import zeromem
 from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper, cryptkeeper_access_methods
 from .exceptions import ReadOnlyConfigError
 
@@ -21,6 +22,12 @@ __doc__ = '''SecureConfig base class for simplifying load of encrypted config fi
 
     If you want Json specifically, use SecureJson.
 '''
+
+class SecureString(str):
+    '(affectionately known as burn-after-reading)'
+    def __del__(self):
+        zeromem(self)
+
 
 class SecureConfig(cryptkeeper_access_methods):
     '''Builds a skeleton SecureConfig object. Not really usable on its own; basically

@@ -1,7 +1,10 @@
 from __future__ import print_function, absolute_import
 
 import os
+
 from cryptography.fernet import Fernet, InvalidToken
+
+from .baseclass import SecureString
 
 # CryptKeeper pattern:
 #  - location possibilities: file, env, string
@@ -19,7 +22,29 @@ from cryptography.fernet import Fernet, InvalidToken
 # The 'sigil' attribute is being used in SecureConfigParser to distinguish an encrypted 
 # value from a plaintext value.  It could be used in the future to allow multiple keys
 # to encrypt and decrypt values from the same config.
+#
+# CryptKeeper is built around cryptography.io which asserts the following
+# standards about its "Fernet" protocol:
+#
+#       * AES in CBC mode with a 128-bit key for encryption; using PKCS7 padding.
+#       * HMAC using SHA256 for authentication.
+#       * Initialization vectors are generated using os.urandom().
+#
 
+def encrypt_string(key, input):
+    ck = CryptKeeper(key)
+    return ck.encrypt(input)
+
+def verify_key(key, teststr = 'test string'):
+    # see if key can be used to encrypt and decrypt successfully.
+    ck = CryptKeeper(key)
+    try:
+        enctxt = ck.encrypt(teststr)
+        #print(enctxt)
+        assert(teststr == ck.decrypt(enctxt))
+    except Exception as e:
+        print(e)
+        return False
 
 class cryptkeeper_access_methods(object):
     '''not to be used directly; subclass to make objects with a standardized array
@@ -46,13 +71,17 @@ class cryptkeeper_access_methods(object):
 
 class CryptKeeper(object):
     sigil_base = 'CK_%s::'
+    
+    @classmethod
+    def generate_key(cls, *args, **kwargs):
+        return Fernet.generate_key()
 
     def __init__(self, *args, **kwargs):
         '''base CryptKeeper class. Supply key=string to provide key,
         or allow CryptKeeper to generate a new key when instantiated 
         without arguments.'''
     
-        self.key = self._clean_key(kwargs.get('key', None))
+        self.key = kwargs.get('key', None)
         self.sigil = kwargs.get('sigil', self.sigil_base % 'FERNET')
         
         # if proactive==True, create new key and store it.
@@ -62,13 +91,14 @@ class CryptKeeper(object):
 
         if self._key_exists():
             self.key = self.load()
+            self.key = self._clean_key(self.key)
             self.crypter = Fernet(self.key)
         elif self.proactive:
-            self.gen_key()
+            self.key = self._gen_key()
             self.crypter = Fernet(self.key)
             self.store()
         else:
-            raise Exception('key location does not exist')
+            raise Exception('no key supplied or key location does not exist')
 
     def _key_exists(self):
         'override for key storage based classes'
@@ -76,12 +106,12 @@ class CryptKeeper(object):
             return True
     
     def _clean_key(self, key):
+        'ensures a key free of surrounding whitespace and newlines.'
         return key.strip()
 
-    def gen_key(self):
-        'generates a new Fernet-based encryption key and assigns it to self.key'
-        self.key = Fernet.generate_key()
-        return self.key
+    def _gen_key(self):
+        'generates a new Fernet-based encryption key'
+        return Fernet.generate_key()
         
     def encrypt(self, inp):
         'takes plaintext string and returns encrypted string'
