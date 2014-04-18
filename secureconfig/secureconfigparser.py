@@ -65,10 +65,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
         return ConfigParser.items(self, sec)
 
     def val_decrypt(self, raw_val, **kwargs):
-        '''Decrypt the value.'''
-        # determine whether raw_val is plaintext or encrypted.
-        # return plaintext value.
-        
+        '''Decrypt supplied value if it appears to be encrypted.'''
         if self.ck and raw_val.startswith(self.ck.sigil):
             return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1])
         else:
