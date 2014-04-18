@@ -1,8 +1,8 @@
 from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import os
 from cryptography.fernet import Fernet, InvalidToken
-
 
 # CryptKeeper pattern:
 #  - location possibilities: file, env, string
@@ -17,22 +17,26 @@ from cryptography.fernet import Fernet, InvalidToken
 #
 # FileCryptKeeper will not create a directory, only a file. Target directory must exist.
 #
+# The 'sigil' attribute is being used in SecureConfigParser to distinguish an encrypted 
+# value from a plaintext value.  It could be used in the future to allow multiple keys
+# to encrypt and decrypt values from the same config.
+
 
 class CryptKeeper(object):
-    sigil = 'CK_FERNET_::'
+    sigil_base = 'CK_FERNET::'
 
     def __init__(self, *args, **kwargs):
         '''base CryptKeeper class. Supply key=string to provide key,
         or allow CryptKeeper to generate a new key when instantiated 
         without arguments.'''
     
-        if kwargs.get('key', None):
-            self.key = kwargs['key']
+        self.key = kwargs.get('key', None)
+        self.sigil = kwargs.get('sigil', self.sigil_base)
         
-        # if proactive==True, create storage destination for key.
+        # if proactive==True, create new key and store it.
         # Appropriate Exception will be raised if store() not possible.
         
-        self.proactive = kwargs.get('proactive', False)
+        self.proactive = kwargs.get('proactive', True)
 
         if self._key_exists():
             self.key = self.load()
@@ -73,7 +77,6 @@ class CryptKeeper(object):
 
 
 class EnvCryptKeeper(CryptKeeper):
-    sigil = 'CK_ENV_::'
 
     def __init__(self, env, *args, **kwargs):
         '''Loads a key from env.  If proactive==True (default: False) and no key is 
@@ -96,7 +99,6 @@ class EnvCryptKeeper(CryptKeeper):
 
 
 class FileCryptKeeper(CryptKeeper):
-    sigil = 'CK_PATH_::'
 
     def __init__(self, path, *args, **kwargs):
         '''loads a key from supplied path.
@@ -111,7 +113,7 @@ class FileCryptKeeper(CryptKeeper):
         (DANGER, WILL ROBINSON!)        
         '''
         
-        self.path = path    
+        self.path = path
         self.paranoid = kwargs.get('paranoid', True)
         super(FileCryptKeeper, self).__init__(*args, **kwargs)
 

@@ -1,4 +1,3 @@
-
 # stubs of ideas for decorators
 
 def encrypted(func):

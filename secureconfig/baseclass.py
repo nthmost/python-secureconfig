@@ -1,7 +1,9 @@
+from __future__ import print_function, absolute_import
+
 from ast import literal_eval
 
-from cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper
-from exceptions import *
+from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper
+from .exceptions import ReadOnlyConfigError
 
 __author__ = 'nthmost'
 
@@ -20,47 +22,58 @@ __doc__ = '''SecureConfig base class for simplifying load of encrypted config fi
     If you want Json specifically, use SecureJson.
 '''
 
-class SecureConfig(object):
-    '''Builds a SecureConfig object. Requires at minimum a filename or a rawtxt argument.
+
+class cryptkeeper_access_methods(object):
+    @classmethod
+    def from_env(cls, env, filepath='', rawtxt='', readonly=True, **kwargs):
+        'required argument: name of environment variable'
+        kwargs['ck'] = EnvCryptKeeper(env)
+        return cls.__init__(*args, **kwargs)
+
+    @classmethod
+    def from_file(cls, keyfilename, filepath='', rawtxt='', readonly=True, **kwargs):
+        'required argument: path to file containing key'
+        kwargs['ck'] = FileCryptKeeper(keyfilename)
+        return cls.__init__(*args, **kwargs)
+
+    @classmethod
+    def from_key(cls, keystring, *args, **kwargs):
+        'required argument: keystring'
+        kwargs['ck'] = CryptKeeper(keystring)
+        return cls.__init__(*args, **kwargs)
+
+
+
+class SecureConfig(cryptkeeper_access_methods):
+    '''Builds a skeleton SecureConfig object. Not really usable on its own; basically
+    provides a common core of classmethods that help set up CryptKeeper methods.
+    
+    #OLD:
+    Requires at minimum a filename or a rawtxt argument.
         
         __init__ requires that you supply a CryptKeeper object, but you can have this part
         handled for you by using the from_env, from_file, and from_key class methods.
 
         `readonly` param ensures that .set() and .write() cannot be used. 
 
-        If ck_obj==None, SecureConfig will attempt to read the file as if it
-        were stored in plaintext and throw an error if it was encrypted.
+        If ck==None, SecureConfig will attempt to read the file as if it were stored 
+        exclusively in plaintext.
 
         Note: rawtxt / result of open(filepath).read() will never be stored.
 
-        :param ck_obj:     CryptKeeper object (see notes about class methods) 
         :param filepath:   absolute or relative path to real file on disk.
         :param rawtxt:     string containing encrypted configuration string.
         :param readonly:   protects source config from .write() (default: True)
+        :param ck:         CryptKeeper object (see notes about class methods) 
 
         :return: SecureConfig object with .cfg dictionary.
     '''
 
-    @classmethod
-    def from_env(cls, env, filepath='', rawtxt='', readonly=True, **kwargs):
-        ck_obj = EnvCryptKeeper(env)
-        return cls.__init__(ck_obj, *args, **kwargs)
-
-    @classmethod
-    def from_file(cls, keyfilename, filepath='', rawtxt='', readonly=True, **kwargs):
-        ck_obj = FileCryptKeeper(keyfilename)
-        return cls.__init__(ck_obj, *args, **kwargs)
-
-    @classmethod
-    def from_key(cls, keystring, *args, **kwargs):
-        ck_obj = CryptKeeper(keystring)
-        return cls.__init__(ck_obj, *args, **kwargs)
-
-    def __init__(self, ck_obj=None, filepath='', rawtxt='', readonly=True):
+    def __init__(self, filepath='', rawtxt='', readonly=True, **kwargs):
 
         self.cfg = {}
         self.readonly = readonly
-        self.ck = self.ck_obj
+        self.ck = kwargs.get('ck', None)
 
         if filepath and rawtxt:
             raise SecureConfigException("Supply either filepath or rawtxt (not both).")
@@ -87,6 +100,12 @@ class SecureConfig(object):
     def _read(self, filepath):
         return open(filepath, "rb" ).read()
 
+    def _serialize(self):
+        return '%r' % self.cfg
+
+    def __repr__(self):
+        return '%r' % self.cfg
+       
     def get(self, section, param):
         '''provides ConfigParser-like interface retrieve variables from sections.
 
@@ -129,10 +148,3 @@ class SecureConfig(object):
         f=open(filepath, 'wb')
         f.write(buf)
         f.close()
-
-    def _serialize(self):
-        return '%r' % self.cfg
-
-    def __repr__(self):
-        return '%r' % self.cfg
-
