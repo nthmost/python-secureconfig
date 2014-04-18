@@ -26,34 +26,34 @@ class cryptkeeper_access_methods(object):
      of encryption classmethods based on what's available in cryptkeeper'''
 
     @classmethod
-    def from_env(cls, env, filepath='', rawtxt='', readonly=True, **kwargs):
-        'required argument: name of environment variable'
-        kwargs['ck'] = EnvCryptKeeper(env)
-        return cls.__init__(*args, **kwargs)
+    def from_env(cls, keyenv, *args, **kwargs):
+        'required argument: keyenv (name of environment variable)'
+        kwargs['ck'] = EnvCryptKeeper(keyenv)
+        return cls(*args, **kwargs)
 
     @classmethod
-    def from_file(cls, keyfilename, filepath='', rawtxt='', readonly=True, **kwargs):
-        'required argument: path to file containing key'
-        kwargs['ck'] = FileCryptKeeper(keyfilename)
-        return cls.__init__(*args, **kwargs)
+    def from_file(cls, keyloc, *args, **kwargs):
+        'required argument: keyloc (path to file containing key)'
+        kwargs['ck'] = FileCryptKeeper(keyloc)
+        return cls(*args, **kwargs)
 
     @classmethod
-    def from_key(cls, keystring, *args, **kwargs):
-        'required argument: keystring'
-        kwargs['ck'] = CryptKeeper(keystring)
-        return cls.__init__(*args, **kwargs)
+    def from_key(cls, key, *args, **kwargs):
+        'required argument: key (string containing key)'
+        kwargs['ck'] = CryptKeeper(key)
+        return cls(*args, **kwargs)
 
 
 class CryptKeeper(object):
-    sigil_base = 'CK_FERNET::'
+    sigil_base = 'CK_%s::'
 
     def __init__(self, *args, **kwargs):
         '''base CryptKeeper class. Supply key=string to provide key,
         or allow CryptKeeper to generate a new key when instantiated 
         without arguments.'''
     
-        self.key = kwargs.get('key', None)
-        self.sigil = kwargs.get('sigil', self.sigil_base)
+        self.key = self._clean_key(kwargs.get('key', None))
+        self.sigil = kwargs.get('sigil', self.sigil_base % 'FERNET')
         
         # if proactive==True, create new key and store it.
         # Appropriate Exception will be raised if store() not possible.
@@ -74,6 +74,9 @@ class CryptKeeper(object):
         'override for key storage based classes'
         if self.key:
             return True
+    
+    def _clean_key(self, key):
+        return key.strip()
 
     def gen_key(self):
         'generates a new Fernet-based encryption key and assigns it to self.key'
@@ -114,7 +117,8 @@ class EnvCryptKeeper(CryptKeeper):
     def store(self):
         'store currently active key into environment variable'
         os.environ[self.env] = self.key
-    
+        os.putenv(self.env, self.key)
+
     def load(self):
         'retrieve key from environment variable'
         return os.environ[self.env]
