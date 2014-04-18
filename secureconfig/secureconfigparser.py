@@ -36,7 +36,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
 
     def __init__(self, *args, **kwargs):
         
-        # supplied by cryptkeeper_access_methods (if used)
+        # supplied by cryptkeeper_access_methods
         self.ck = kwargs.pop('ck', None) 
         
         ConfigParser.__init__(self, *args, **kwargs)
@@ -70,7 +70,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
         # return plaintext value.
         
         if self.ck and raw_val.startswith(self.ck.sigil):
-            return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil[1]))
+            return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1])
         else:
             return raw_val
 
@@ -93,7 +93,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
         
         old_raw_val = self.raw_get(sec, key)
 
-        if old_raw_val.startswith(self.ck.sigil) or encrypt=True:
+        if old_raw_val.startswith(self.ck.sigil) or encrypt==True:
             new_val = self.ck.sigil + self.ck.crypter.encrypt(new_val)
             return self.raw_set(sec, key, new_val)
 

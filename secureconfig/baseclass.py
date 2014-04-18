@@ -2,7 +2,7 @@ from __future__ import print_function, absolute_import
 
 from ast import literal_eval
 
-from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper
+from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper, cryptkeeper_access_methods
 from .exceptions import ReadOnlyConfigError
 
 __author__ = 'nthmost'
@@ -21,28 +21,6 @@ __doc__ = '''SecureConfig base class for simplifying load of encrypted config fi
 
     If you want Json specifically, use SecureJson.
 '''
-
-
-class cryptkeeper_access_methods(object):
-    @classmethod
-    def from_env(cls, env, filepath='', rawtxt='', readonly=True, **kwargs):
-        'required argument: name of environment variable'
-        kwargs['ck'] = EnvCryptKeeper(env)
-        return cls.__init__(*args, **kwargs)
-
-    @classmethod
-    def from_file(cls, keyfilename, filepath='', rawtxt='', readonly=True, **kwargs):
-        'required argument: path to file containing key'
-        kwargs['ck'] = FileCryptKeeper(keyfilename)
-        return cls.__init__(*args, **kwargs)
-
-    @classmethod
-    def from_key(cls, keystring, *args, **kwargs):
-        'required argument: keystring'
-        kwargs['ck'] = CryptKeeper(keystring)
-        return cls.__init__(*args, **kwargs)
-
-
 
 class SecureConfig(cryptkeeper_access_methods):
     '''Builds a skeleton SecureConfig object. Not really usable on its own; basically

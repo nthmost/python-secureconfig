@@ -1,4 +1,3 @@
-from __future__ import print_function
 from __future__ import print_function, absolute_import
 
 import os
@@ -20,6 +19,29 @@ from cryptography.fernet import Fernet, InvalidToken
 # The 'sigil' attribute is being used in SecureConfigParser to distinguish an encrypted 
 # value from a plaintext value.  It could be used in the future to allow multiple keys
 # to encrypt and decrypt values from the same config.
+
+
+class cryptkeeper_access_methods(object):
+    '''not to be used directly; subclass to make objects with a standardized array
+     of encryption classmethods based on what's available in cryptkeeper'''
+
+    @classmethod
+    def from_env(cls, env, filepath='', rawtxt='', readonly=True, **kwargs):
+        'required argument: name of environment variable'
+        kwargs['ck'] = EnvCryptKeeper(env)
+        return cls.__init__(*args, **kwargs)
+
+    @classmethod
+    def from_file(cls, keyfilename, filepath='', rawtxt='', readonly=True, **kwargs):
+        'required argument: path to file containing key'
+        kwargs['ck'] = FileCryptKeeper(keyfilename)
+        return cls.__init__(*args, **kwargs)
+
+    @classmethod
+    def from_key(cls, keystring, *args, **kwargs):
+        'required argument: keystring'
+        kwargs['ck'] = CryptKeeper(keystring)
+        return cls.__init__(*args, **kwargs)
 
 
 class CryptKeeper(object):
