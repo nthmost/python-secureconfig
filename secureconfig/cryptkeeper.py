@@ -4,7 +4,7 @@ import os
 
 from cryptography.fernet import Fernet, InvalidToken
 
-from .baseclass import SecureString
+#from .baseclass import SecureString
 
 # CryptKeeper pattern:
 #  - location possibilities: file, env, string

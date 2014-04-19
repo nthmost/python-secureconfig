@@ -6,7 +6,27 @@ from .zeromem import zeromem
 from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper, cryptkeeper_access_methods
 from .exceptions import ReadOnlyConfigError
 
-__author__ = 'nthmost'
+class SecureString(str):
+    '''When garbage collected, leaves behind only a string of zeroes.
+    
+    (affectionately known as burn-after-reading)'''
+
+    def __init__(self, anystring):
+        self._string = anystring
+    
+    def burn(self):
+        zeromem(self._string)
+    
+    def __del__(self):
+        #print("I'm being deleted!")
+        zeromem(self._string)
+
+    def __str__(self):
+        return self._string
+        
+    def __repr__(self):
+        return self._string
+
 
 __doc__ = '''SecureConfig base class for simplifying load of encrypted config files (default: serialized dict).
 
@@ -22,11 +42,6 @@ __doc__ = '''SecureConfig base class for simplifying load of encrypted config fi
 
     If you want Json specifically, use SecureJson.
 '''
-
-class SecureString(str):
-    '(affectionately known as burn-after-reading)'
-    def __del__(self):
-        zeromem(self)
 
 
 class SecureConfig(cryptkeeper_access_methods):
