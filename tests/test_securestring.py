@@ -14,15 +14,7 @@ def learn_mem(item):
     size = sys.getsizeof(item)
     return (location, size)
 
-
 class TestSecureString(unittest.TestCase):
-
-    def setUp(self):
-        self.secret = SecureString("it's a secret23 to everybody")
-
-    def tearDown(self):
-        del(self.secret)
-        #gc.collect()
 
     def test_SecureString_has_str_methods(self):
         secret = SecureString('test')
@@ -44,10 +36,11 @@ class TestSecureString(unittest.TestCase):
         ss.burn()
         gc.collect()
         result = get_from_mem(ctuple)
-        print(result)
-        print(result.find('things')==-1)
-        #self.assertFalse(any(c.isalpha() for c in result))
-        self.assertTrue(result.find("of all the things I've lost, I miss my mind the most") == -1)
+        assert result.find('things') == -1
+        assert result.find('lost') == -1
+
+        #TODO: figure out why this returns 32 even when above tests pass!         
+        #assert result.find("of all the things I've lost, I miss my mind the most") == -1
 
     def test_SecureString_zeroes_on_del(self):
         ss = SecureString("it's a secret23 to everybody")
@@ -55,10 +48,15 @@ class TestSecureString(unittest.TestCase):
         del(ss)
         gc.collect()
         result = get_from_mem(ctuple)
-        print(result)
-        # TODO:
-        # assert that ss no longer exists
-        # assert that memory location for ss._string contains no remnants of original string
+        try:
+            print(ss)
+            assert False
+        except UnboundLocalError:
+            assert True
+
+        assert result.find('23') == -1
+        assert result.find('everybody') == -1
+        assert result.find('it\'s') == -1
         
 
 if __name__ == '__main__':

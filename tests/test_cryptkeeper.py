@@ -21,15 +21,19 @@ def assure_clean_env():
     os.environ[TEST_KEYENV_NAME] = ''
 
 class TestCryptKeeper(unittest.TestCase):
-    def setUp(self):
 
+    @classmethod
+    def setup_class(cls):
+        assure_clean_env()
+
+    def setUp(self):
         # environment variable used here should be created on the fly.
         self.env_ck = EnvCryptKeeper(TEST_KEYENV_NAME)
 
         # file will be created in CWD and deleted afterwards.
         self.file_ck = FileCryptKeeper(TEST_KEYFILE_PATH)
 
-        #
+        # 
         self.string_ck = CryptKeeper(key=TEST_KEYSTRING)
         self.string_ck_wrong = CryptKeeper(key=TEST_KEYSTRING_WRONG)
 

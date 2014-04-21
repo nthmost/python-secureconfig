@@ -68,3 +68,6 @@ class TestSecureConfig(unittest.TestCase):
     def test_read_enc_with_ck_produces_cfg(self):
         sj = SecureJson.from_key(TEST_KEYSTRING, filepath=TEST_JSON_OUTFILE)
         self.assertTrue( type(sj.cfg)== type({}) )
+
+if __name__ == '__main__':
+    unittest.main()

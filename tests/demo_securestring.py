@@ -4,7 +4,6 @@ import ctypes, sys, gc
 
 from secureconfig import SecureString, zeromem
 
-
 def show_mem(ctypes_tuple):
     location = ctypes_tuple[0]
     size = ctypes_tuple[1]
@@ -32,7 +31,6 @@ def test_secure_string(secret):
 
     del(secret)
 
-
     show_mem((location, size))
     return (location, size)
 
@@ -43,6 +41,7 @@ ret = test_secure_string(key)
 
 # force garbage collection
 del(key)
+gc.collect()
 
 show_mem(ret)
 

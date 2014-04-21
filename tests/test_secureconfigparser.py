@@ -29,44 +29,32 @@ hostname=some_hostname
 port=3306
 ''')
 
-
-def encrypt_password(config, new_val='lame_password'):
-    cfg.set('database', 'password', new_val, True)
-    return cfg
-
-    print(cfg.raw_get('database', 'password'))
-
-    print('\ncfg.get returns:')
-    print(cfg.get('database', 'password'))
-    cfg.write(open(TEST_INI_OUTFILE, 'w'))
-
-
-def decrypt_password(ck_obj):
-    cfg = SecureConfigParser(ck=ck_obj)
-    cfg.read(TEST_INI_OUTFILE)
-
-    try:
-        print(cfg.get('database', 'password'))
-    except InvalidToken:
-        print('wrong key for this config file')
-
-
-def assure_clean_env():
-    os.environ[TEST_KEYENV_NAME] = ''
-
 def delete_test_ini():
     os.remove(TEST_INI_INPUT)
     if os.path.exists(TEST_INI_OUTFILE):
         os.remove(TEST_INI_OUTFILE)
 
-# what passes for a "fixture" in this test module.
+# FIXTURES
+# such as they are.
 testd = {     'section': 'database',
               'plain': { 'key': 'username', 'raw_val': 'some_user'},
               'enc': {'key': 'password', 'raw_val': 'lame_password'},
-            }
+        }
+
+
 # ck refers to CryptKeeper objects.
 # the CK objects are all thoroughly tested in test_cryptkeeper.py, 
 # so here we are testing with just the base (string) class, CryptKeeper
+
+DETRITUS = []
+def write_config(cfg, filename):
+    global DETRITUS
+    path = os.path.join(CWD, filename)
+    fh=open(path, 'w')
+    cfg.write(fh)
+    fh.close()
+    DETRITUS.append(path)
+    
 
 class TestSecureConfigParser(unittest.TestCase):
 
@@ -76,26 +64,19 @@ class TestSecureConfigParser(unittest.TestCase):
 
     @classmethod
     def teardown_module(cls):
-        pass
         #delete_test_ini()
+        print("Created files: ")
+        print(DETRITUS)
 
     def setUp(self):
         self.ck = CryptKeeper(key=TEST_KEYSTRING)
         self.ck_wrong = CryptKeeper(key=TEST_KEYSTRING_WRONG)
-
-    def test_wrong_ck_raises_InvalidToken(self):
-        scfg = SecureConfigParser(ck=self.ck_wrong)
-        scfg.read(TEST_INI_OUTFILE)
-        self.assertRaises(InvalidToken, scfg.get(testd['section'], testd['enc']['key'])) 
 
     def test_get_plaintext_value_is_plaintext(self):
         scfg = SecureConfigParser(ck=self.ck)
         scfg.read(TEST_INI)
         plainval = scfg.get(testd['section'], testd['plain']['key'])
         assert plainval == testd['plain']['raw_val']
-
-    def test_get_encrypted_value_is_encrypted(self):
-        pass
 
     def test_set_encrypted_value_is_encrypted(self):
         scfg = SecureConfigParser(ck=self.ck)
@@ -108,22 +89,35 @@ class TestSecureConfigParser(unittest.TestCase):
         self.assertTrue(scfg.get(testd['section'], testd['enc']['key']) == testd['enc']['raw_val'])
 
     def test_write_config_with_new_encrypted_values(self):
+        filename = 'new_encrypted_values.ini'
+        path = os.path.join(CWD, filename)
         scfg = SecureConfigParser(ck=self.ck)
         scfg.read(TEST_INI)
         scfg.set(testd['section'], testd['enc']['key'], testd['enc']['raw_val'], encrypt=True)
-  
-
-
+        write_config(scfg, path)
+        
+        scfg2 = SecureConfigParser(ck=self.ck)
+        scfg2.read(path)
+        assert scfg2.get(testd['section'], testd['enc']['key'])==testd['enc']['raw_val']
+        assert scfg2.get(testd['section'], testd['plain']['key'])==testd['plain']['raw_val']
+        
     def test_write_config_unchanged(self):
-        fh=open(TEST_INI_OUTFILE, 'w')
+        filename = 'unchanged.ini'
+        path = os.path.join(CWD, filename)
         scfg = SecureConfigParser()
         scfg.read(TEST_INI)
-        scfg.write(fh)
-        fh.close()
-
-        self.assertTrue(os.path.exists(TEST_INI_OUTFILE))
+        write_config(scfg, filename)
+        
+        self.assertTrue(os.path.exists(path))
         cfg = ConfigParser()
-        cfg.read(TEST_INI_OUTFILE)
-        assert(cfg.get(testd['section'], testd['plain']['key'] == testd['plain']['raw_val']))
-        os.remove(TEST_INI_OUTFILE)
+        cfg.read(path)
+        assert(cfg.get(testd['section'], testd['plain']['key']) == testd['plain']['raw_val'])
 
+    def test_wrong_ck_raises_InvalidToken(self):
+        scfg = SecureConfigParser(ck=self.ck_wrong)
+        scfg.read(TEST_INI_OUTFILE)
+        self.assertRaises(InvalidToken, scfg.get(testd['section'], testd['enc']['key'])) 
+
+
+if __name__ == '__main__':
+    unittest.main()

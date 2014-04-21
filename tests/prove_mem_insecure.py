@@ -1,9 +1,7 @@
-# FOR STACK TRACE (remove for deployment):
+# FOR STACK TRACE:
 # 
 #import time
 #time.sleep(30)
-
-# begin normal code:
 
 import sys
 import ctypes
