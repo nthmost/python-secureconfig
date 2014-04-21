@@ -86,7 +86,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
             a value that was not previously encrypted.
         '''
         if not self.has_option(sec, key):
-            return self.raw_set(sec, key, val)
+            return self.raw_set(sec, key, new_val)
         
         old_raw_val = self.raw_get(sec, key)
 
