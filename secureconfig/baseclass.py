@@ -107,8 +107,8 @@ class SecureConfig(cryptkeeper_access_methods):
         :param param:    parameter within "section" whose value will be returned.
 
         '''
-        return self.cfg['section']['param']
-        
+        return self.cfg[section][param]
+
     def remove_section(self, section):
         '''Remove the specified section from the configuration. If the section in fact 
             existed, return True. Otherwise return False.'''
@@ -124,6 +124,10 @@ class SecureConfig(cryptkeeper_access_methods):
             raise SecureConfigException('specified section already exists')
         else:
             self.cfg[section] = {}            
+
+    def sections(self):
+        'Returns a list of available sections in the config.'
+        return list(self.cfg.keys())
 
     def options(self, section):
         'Returns a list of options available in the specified section.'
@@ -145,21 +149,13 @@ class SecureConfig(cryptkeeper_access_methods):
         else:
             self.cfg[section][param] = value
 
-    def write(self, fh=''):
+    def write(self, fh=None):
         '''if .readonly=False, allows writing to specified filehandle.'''
-        
         if self.readonly:
             raise ReadOnlyConfigError
-
         try:
             buf = self._encrypt(self._serialize())
         except AttributeError:
-            # no self.ck because no key supplied
+            # no self.ck / no key supplied
             buf = self._serialize()
-
-        if filepath=='':
-            filepath = self.filepath + '.enc'
-            if os.path.exists(filepath):
-                filepath = self.filepath
-            
-        open(filepath, 'wb').write(buf)
+        fh.write(buf)
