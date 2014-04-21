@@ -13,7 +13,7 @@ __doc__ = '''SecureConfig base class for simplifying load of encrypted config fi
     * Instantiate with either a file path or a string of text (or none for a blank slate).
     * Stores simple "config" dictionary in .cfg
     * ConfigParser-like interface (get, set, add_section, remove_section, write)
-    * .write(filehandle) method serializes dictionary and writes to open filehandle
+    * .write(filehandle) method serializes dictionary, encrypts, and writes to open filehandle
     * Supply readonly=True to protect configuration from .set and .write
     
     SecureConfig base class uses only serialized python dictionaries.
@@ -150,7 +150,7 @@ class SecureConfig(cryptkeeper_access_methods):
             self.cfg[section][param] = value
 
     def write(self, fh=None):
-        '''if .readonly=False, allows writing to specified filehandle.'''
+        '''if .readonly=False, serializes, encrypts (if key) writing to specified filehandle.'''
         if self.readonly:
             raise ReadOnlyConfigError
         try:
