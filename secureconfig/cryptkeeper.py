@@ -65,7 +65,7 @@ class cryptkeeper_access_methods(object):
     @classmethod
     def from_key(cls, key, *args, **kwargs):
         'required argument: key (string containing key)'
-        kwargs['ck'] = CryptKeeper(key)
+        kwargs['ck'] = CryptKeeper(key=key)
         return cls(*args, **kwargs)
 
 

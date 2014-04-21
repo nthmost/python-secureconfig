@@ -10,4 +10,4 @@ from .securestring import SecureString
 from .zeromem import zeromem
 from .secureconfigparser import SecureConfigParser
 from .securejson import SecureJson
-from .exceptions import ReadOnlyConfigError
+from .exceptions import ReadOnlyConfigError, SecureConfigException

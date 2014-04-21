@@ -1,10 +1,10 @@
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import
 
 from ast import literal_eval
 
 from .zeromem import zeromem
 from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper, cryptkeeper_access_methods
-from .exceptions import ReadOnlyConfigError
+from .exceptions import ReadOnlyConfigError, SecureConfigException
 
 __doc__ = '''SecureConfig base class for simplifying load of encrypted config files (default: serialized dict).
 
@@ -54,17 +54,21 @@ class SecureConfig(cryptkeeper_access_methods):
         self.ck = kwargs.get('ck', None)
 
         if filepath and rawtxt:
-            raise SecureConfigException("Supply either filepath or rawtxt (not both).")
+            raise SecureConfigException('Supply either filepath or rawtxt (not both).')
 
         if filepath:
             rawtxt = self._read(filepath)
 
-        #TODO: work out more specific Exceptions
-        try:
-            self._fill(self._decrypt(rawtxt))
-        except Exception as e:
-            # if self.ck is None or rawtxt is not encrypted
-            self._fill(rawtxt)
+        if self.ck:
+            self._fill(self._decrypt(rawtxt))        
+        else:
+            try:
+                self._fill(rawtxt)
+            except ValueError:
+                # invalid data structure OR this file was encrypted.
+                # This approach may only work for SecureJson, which so far is the only use 
+                # for this base class. Please rework as needed to better generalize.
+                raise SecureConfigException('bad data or missing encryption key')                  
 
     def _decrypt(self, buf):
         return self.ck.crypter.decrypt(buf)
@@ -76,7 +80,7 @@ class SecureConfig(cryptkeeper_access_methods):
         self.cfg = literal_eval(txt)
 
     def _read(self, filepath):
-        return open(filepath, "rb" ).read()
+        return open(filepath, 'rb' ).read()
 
     def _serialize(self):
         return '%r' % self.cfg

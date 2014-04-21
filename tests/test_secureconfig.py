@@ -6,6 +6,7 @@ from cryptography.fernet import InvalidToken
 
 from secureconfig.cryptkeeper import *
 from secureconfig import SecureConfig, SecureJson
+from secureconfig import SecureConfigException
 
 CWD = os.path.dirname(os.path.realpath(__file__))
 
@@ -30,10 +31,6 @@ def delete_test_json():
     os.remove(TEST_JSON_OUTFILE)    
 
 
-# ck refers to CryptKeeper objects.
-# the CK objects are all thoroughly tested in test_cryptkeeper.py, 
-# so here we are testing with just the base (string) class, CryptKeeper
-
 class TestSecureConfig(unittest.TestCase):
 
     @classmethod
@@ -49,15 +46,25 @@ class TestSecureConfig(unittest.TestCase):
         self.ck = CryptKeeper(key=TEST_KEYSTRING)
         self.ck_wrong = CryptKeeper(key=TEST_KEYSTRING_WRONG)
 
-    def test_wrong_ck_raises_InvalidToken(self):
-        pass
-
     def test_write_config_unchanged(self):
+        # refers to code that will be implemented in secureconfig 0.0.5
         pass
 
     def test_write_config_encrypted(self):
+        # refers to code that will be implemented in secureconfig 0.0.5
         pass
 
-    def test_read_enc_without_ck(self):
-        pass
+    def test_read_enc_without_key_raises_SecureConfigException(self):
+        'bad data or missing key'
+        kwargs = { 'filepath': TEST_JSON_OUTFILE }
+        self.assertRaises(SecureConfigException, SecureJson, **kwargs )
+        
+    def test_read_enc_wrong_key_raises_InvalidToken(self):
+        'ValueError: No JSON object could be decoded'
+        args = [TEST_KEYSTRING_WRONG]
+        kwargs = { 'filepath': TEST_JSON_OUTFILE }
+        self.assertRaises(InvalidToken, SecureJson.from_key, *args, **kwargs) 
 
+    def test_read_enc_with_ck_produces_cfg(self):
+        sj = SecureJson.from_key(TEST_KEYSTRING, filepath=TEST_JSON_OUTFILE)
+        self.assertTrue( type(sj.cfg)== type({}) )
