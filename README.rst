@@ -31,7 +31,7 @@ Config styles currently supported::
     serialized dictionaries (see SecureConfig) -- whole-file encryption only.
 
 
-Please let me know if you want to see another type supported.
+Please let the maintainer (@nthmost) know if you want to see another type supported.
 
 
 Purpose
@@ -148,6 +148,14 @@ NEW IN 0.0.3:
     scfg = SecureConfigParser.from_env('SCP_INI_KEY')
     scfg.read(configpath)
 
+    user = scfg.get('credentials', 'username')
+    pass = SecureString(scfg.get('credentials', 'password'))
+        
+    connection = GetSomeConnection(username, password)
+
+    # SecureString overwrites its string data with zeroes upon garbage collection.
+    del(pass)
+
 
 
 SecureConfig
@@ -166,9 +174,14 @@ SecureConfig stores data in serialized dictionaries, which are then encrypted
 as a whole and stored as an undecipherable blob of information. The data can only
 be read and recovered by supplying the private key that it was encrypted with.
 
-SecureConfig provides a .cfg dictionary for raw access.  It also provides 
-.get and .set methods, mimicking ConfigParser in its interface (this works as long 
-as your data is exactly 2 levels deep).
+SecureConfig provides a .cfg dictionary for raw access.  It also provides many ConfigParser
+style interactions (see class docstring), including .get and .set methods.  This works as
+long as your data is at least 2-dimensional.  
+
+You can still use SecureConfig with 1-dimensional data (i.e. flat dictionary of key=value
+pairs); you just can't use the ConfigParser style interactions. 
+
+Below is demonstrated the non-ConfigParser style of interacting with SecureConfig data.
 
 Basic Usage (CHANGED SINCE 0.0.3):
 
@@ -178,14 +191,15 @@ Basic Usage (CHANGED SINCE 0.0.3):
 
     config = SecureJson.from_file('.keys/aes_key')
 
-    username = config.get('credentials', 'username')
-    password = SecureString(config.get('credentials', 'password'))
+    cfg = config.cfg
 
+    username = cfg['username']
+    password = SecureString(cfg['password'])
 
+    connection = GetSomeConnection(username, password)
 
-
-
-
+    # password's string data will be overwritten with zeroes when garbage-collected.
+    del(password)
 
 
 
