@@ -15,3 +15,6 @@ MANIFEST
 examples/
 *.txt
 *.ipynb
+*.json
+*.ini
+*.enc

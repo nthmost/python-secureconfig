@@ -9,45 +9,51 @@ from .exceptions import ReadOnlyConfigError, SecureConfigException
 __doc__ = '''SecureConfig base class for simplifying load of encrypted config files (default: serialized dict).
 
     Features:
-    * Instantiate with either a file path or a string of text.
-    * Keeps minimum of attributes stored to the object.
-    * Access to config variables via .cfg dictionary.
-    * ConfigParser-like interface via .get(section, param) method.
-    * Default readonly=True protects configuration and "forgets" keyloc.
-    * Supply readonly=False to allow use of .set() method.
+  
+    * Instantiate with either a file path or a string of text (or none for a blank slate).
+    * Stores simple "config" dictionary in .cfg
+    * ConfigParser-like interface (get, set, add_section, remove_section, write)
+    * .write(filehandle) method serializes dictionary and writes to open filehandle
+    * Supply readonly=True to protect configuration from .set and .write
     
     SecureConfig base class uses only serialized python dictionaries.
 
-    If you want Json specifically, use SecureJson.
+    For JSON, use SecureJson.
+    For .ini-style files, use SecureConfigParser.
 '''
 
 
 class SecureConfig(cryptkeeper_access_methods):
-    '''Builds a skeleton SecureConfig object. Not really usable on its own; basically
-    provides a common core of classmethods that help set up CryptKeeper methods.
+    '''Builds a SecureConfig object. 
     
-    #OLD:
-    Requires at minimum a filename or a rawtxt argument.
-        
-        __init__ requires that you supply a CryptKeeper object, but you can have this part
-        handled for you by using the from_env, from_file, and from_key class methods.
+    Without any arguments, SecureConfig.__init__ is a blank slate into which you can
+    load dictionary-based data directly into cfg.
+    
+    To decrypt data, SecureConfig requires a CryptKeeper object, but the following class
+    methods help set this up for you:
 
-        `readonly` param ensures that .set() and .write() cannot be used. 
+        SecureConfig.from_key(keystring)
+        SecureConfig.from_file(keyfilename)    
+        SecureConfig.from_env(key_environment_variable_name)
 
-        If ck==None, SecureConfig will attempt to read the file as if it were stored 
-        exclusively in plaintext.
+    Otherwise, supply a CryptKeeper object directly:
+    
+        SecureConfig(ck=CryptKeeper(key=some_key))
 
-        Note: rawtxt / result of open(filepath).read() will never be stored.
+    If ck==None, SecureConfig will attempt to read the file as if it were stored 
+    exclusively in plaintext and throws SecureConfigException if it cannot be parsed.
+
+    `readonly` param ensures that .set() and .write() cannot be used. 
 
         :param filepath:   absolute or relative path to real file on disk.
         :param rawtxt:     string containing encrypted configuration string.
-        :param readonly:   protects source config from .write() (default: True)
-        :param ck:         CryptKeeper object (see notes about class methods) 
+        :param readonly:   protects source config from .write() (default: False)
+        :param ck:         CryptKeeper object (see secureconfig.cryptkeeper)
 
         :return: SecureConfig object with .cfg dictionary.
     '''
 
-    def __init__(self, filepath='', rawtxt='', readonly=True, **kwargs):
+    def __init__(self, filepath='', rawtxt='', readonly=False, **kwargs):
 
         self.cfg = {}
         self.readonly = readonly
@@ -59,9 +65,9 @@ class SecureConfig(cryptkeeper_access_methods):
         if filepath:
             rawtxt = self._read(filepath)
 
-        if self.ck:
+        if self.ck and rawtxt:
             self._fill(self._decrypt(rawtxt))        
-        else:
+        elif rawtxt:
             try:
                 self._fill(rawtxt)
             except ValueError:
@@ -69,6 +75,9 @@ class SecureConfig(cryptkeeper_access_methods):
                 # This approach may only work for SecureJson, which so far is the only use 
                 # for this base class. Please rework as needed to better generalize.
                 raise SecureConfigException('bad data or missing encryption key')                  
+        else:
+            # this is a "blank slate" configuration.
+            self.cfg = {}
 
     def _decrypt(self, buf):
         return self.ck.crypter.decrypt(buf)
@@ -99,11 +108,33 @@ class SecureConfig(cryptkeeper_access_methods):
 
         '''
         return self.cfg['section']['param']
+        
+    def remove_section(self, section):
+        '''Remove the specified section from the configuration. If the section in fact 
+            existed, return True. Otherwise return False.'''
+        try:
+            self.cfg.pop(section)
+            return True
+        except KeyError:
+            return False
+
+    def add_section(self, section):
+        'Add a section named section to the instance.'
+        if self.cfg.get(section, None):
+            raise SecureConfigException('specified section already exists')
+        else:
+            self.cfg[section] = {}            
+
+    def options(self, section):
+        'Returns a list of options available in the specified section.'
+        return list(self.cfg[section].keys())
 
     def set(self, section, param, value):
-        '''complement of .get(), allows change to configuration dictionary if .readonly=False.
+        '''if .readonly=False, allows set of param in "section" to value.
 
-        If your config data is shallow, i.e. non-hierarchical, a TypeError will be thrown.
+        If your config data is 1-dimensional, TypeError will be thrown.
+        
+        If "section" does not exist, KeyError will be thrown.
 
         :param section:  top-level "section" of configuration.
         :param param:    parameter to set within "section".
@@ -114,17 +145,21 @@ class SecureConfig(cryptkeeper_access_methods):
         else:
             self.cfg[section][param] = value
 
-    def write(self, filepath=''):
+    def write(self, fh=''):
+        '''if .readonly=False, allows writing to specified filehandle.'''
+        
         if self.readonly:
             raise ReadOnlyConfigError
 
         try:
             buf = self._encrypt(self._serialize())
         except AttributeError:
-            # no self.crypter because no keyloc supplied
+            # no self.ck because no key supplied
             buf = self._serialize()
 
         if filepath=='':
-            filepath = self.filepath
+            filepath = self.filepath + '.enc'
+            if os.path.exists(filepath):
+                filepath = self.filepath
             
         open(filepath, 'wb').write(buf)
