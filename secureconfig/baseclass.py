@@ -7,13 +7,11 @@ from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper, cryptkeep
 from .exceptions import ReadOnlyConfigError
 
 class SecureString(str):
-    '''When garbage collected, leaves behind only a string of zeroes.
-    
-    (affectionately known as burn-after-reading)'''
+    '''When garbage collected, leaves behind only a string of zeroes.'''
 
     def __init__(self, anystring):
         self._string = anystring
-    
+
     def burn(self):
         zeromem(self._string)
     
