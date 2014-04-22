@@ -27,12 +27,10 @@ across all of your data structures, the CryptKeeper classes will come in handy.
 Config styles currently supported::
 
     ConfigParser (see SecureConfigParser)
-    Json (see SecureJson) -- whole-file encryption only.
-    serialized dictionaries (see SecureConfig) -- whole-file encryption only.
-
+    Json (see SecureJson) -- whole-data encryption only.
+    serialized dictionaries (see SecureConfig) -- whole-data encryption only.
 
 Please let the maintainer (@nthmost) know if you want to see another type supported.
-
 
 Purpose
 -------
@@ -69,7 +67,7 @@ secureconfig.utils.  Feel free to suggest new ones.
 
 This library can be found at https://bitbucket.org/nthmost/python-secureconfig 
 
-Contributions and code critiques are warmly welcomed.
+Contributions and code/documentation critiques are warmly welcomed.
 
 
 How secureconfig Works
@@ -95,13 +93,19 @@ Table of Methods of key storage - CryptKeeper class - SecureConfig* classmethod:
 
 All CryptKeeper classes have a default argument of `proactive=True`, which means
 that the CryptKeeper instance will try to store a key in that place whether it
-currently exists or not.  If this place is not writeable, you'll get the usual
-error for that operation (OSError for files, KeyError for environment variables).
+currently exists or not.  If this place is not writeable, you'll get your OS's usual
+error for an attempted operation.
+
+When proactive=False and locations do not exist, you'll get a KeyError for environment
+variables or an OSError for 
 
 If CryptKeeper classes are instantiated without a key argument, they will generate
-a key automatically for you.
+a key automatically for you. 
 
 Another way to generate a new key is to use the CryptKeeper classmethod `.generate_key()`.
+
+NOTICE:  You can't assign a new key to a CryptKeeper object after it's been created and
+have it work. (If that seems like misbehaviour, let me know; it's changeable.)
 
 All of the SecureConfig* classes can be used with or without encryption keys,
 although you'll get a SecureConfigException('bad data or no encryption key') if
@@ -111,7 +115,7 @@ you try to parse a data structure (such as JSON) out of encrypted text.
 SecureJson
 ----------
 
-Basic usage (CHANGED SINCE 0.0.3):
+Basic usage (CHANGED SINCE 0.1.0):
 
 .. code-block:: python
 
@@ -128,13 +132,24 @@ Basic usage (CHANGED SINCE 0.0.3):
 
     # SecureString overwrites its string data with zeroes upon garbage collection.
     del(password)
+    
+    # set a new password 
+    config.set('credentials', 'password', 'better_password')
+    
+    fh=open('/path/to/config.json.enc', 'w')
+    config.write(fh)
+    fh.close()
+
 
 
 
 SecureConfigParser
 ------------------
 
-NEW IN 0.0.3:
+NEW SINCE 0.1.0:
+
+
+Hor 
 
 .. code-block:: python
 
@@ -155,6 +170,13 @@ NEW IN 0.0.3:
 
     # SecureString overwrites its string data with zeroes upon garbage collection.
     del(pass)
+
+    # IMPORTANT: supply encrypt=True to encrypt values.
+    config.set('credentials', 'password', 'better_password', encrypt=True)
+    
+    fh=open('/path/to/new_scfp.ini', 'w')
+    config.write(fh)
+    fh.close()
 
 
 
@@ -183,7 +205,7 @@ pairs); you just can't use the ConfigParser style interactions.
 
 Below is demonstrated the non-ConfigParser style of interacting with SecureConfig data.
 
-Basic Usage (CHANGED SINCE 0.0.3):
+Basic Usage (CHANGED SINCE 0.1.0):
 
 .. code-block:: python
 
@@ -200,7 +222,6 @@ Basic Usage (CHANGED SINCE 0.0.3):
 
     # password's string data will be overwritten with zeroes when garbage-collected.
     del(password)
-
 
 
 
