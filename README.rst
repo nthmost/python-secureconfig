@@ -97,7 +97,7 @@ currently exists or not.  If this place is not writeable, you'll get your OS's u
 error for an attempted operation.
 
 When proactive=False and locations do not exist, you'll get a KeyError for environment
-variables or an OSError for 
+variables or an OSError for file operations.
 
 If CryptKeeper classes are instantiated without a key argument, they will generate
 a key automatically for you. 
@@ -112,44 +112,25 @@ although you'll get a SecureConfigException('bad data or no encryption key') if
 you try to parse a data structure (such as JSON) out of encrypted text.
 
 
-SecureJson
-----------
-
-Basic usage (CHANGED SINCE 0.1.0):
-
-.. code-block:: python
-
-    from secureconfig import SecureJson, SecureString
-
-    configpath = '/etc/app/config.json.enc'
-
-    config = SecureJson.from_file('.keys/aes_key', filepath=configpath)
-
-    username = config.get('credentials', 'username')
-    password = SecureString(config.get('credentials', 'password'))
-
-    connection = GetSomeConnection(username, password)
-
-    # SecureString overwrites its string data with zeroes upon garbage collection.
-    del(password)
-    
-    # set a new password 
-    config.set('credentials', 'password', 'better_password')
-    
-    fh=open('/path/to/config.json.enc', 'w')
-    config.write(fh)
-    fh.close()
-
-
-
-
 SecureConfigParser
 ------------------
 
 NEW SINCE 0.1.0:
 
+SecureConfigParser is a subclass of the configparser module's ConfigParser class.
 
-Hor 
+The difference is that, when instantiated via one of the standardized cryptkeeper 
+classmethods (see above) so that a private key is supplied, SecureConfigParser
+detects encrypted entries and decrypts them when demanded (i.e. when .get is used).
+
+So, unlike SecureJson, this class encrypts and decrypts single values rather than
+entire files.
+
+All of the usual ConfigParser methods are available.
+
+In addition, you can set new values into the config to be encrypted by supplying
+`encrypt=True` as an argument to the .set method. See an example of this below.
+
 
 .. code-block:: python
 
@@ -175,6 +156,46 @@ Hor
     config.set('credentials', 'password', 'better_password', encrypt=True)
     
     fh=open('/path/to/new_scfp.ini', 'w')
+    config.write(fh)
+    fh.close()
+
+
+SecureJson
+----------
+
+SecureJson is a very simple wrapper around JSON data. It decrypts whole files
+(or whole strings) and can encrypt new configurations as well.
+
+Use one of the cryptkeeper classmethods above to instantiate with a key.
+
+SecureJson will happily process plaintext data as well if no key is supplied.
+
+SecureJson is a subclass of SecureConfig (see below), and as such, as some
+ConfigParser-like operations included.
+
+
+Basic usage (CHANGED SINCE 0.1.0):
+
+.. code-block:: python
+
+    from secureconfig import SecureJson, SecureString
+
+    configpath = '/etc/app/config.json.enc'
+
+    config = SecureJson.from_file('.keys/aes_key', filepath=configpath)
+
+    username = config.get('credentials', 'username')
+    password = SecureString(config.get('credentials', 'password'))
+
+    connection = GetSomeConnection(username, password)
+
+    # SecureString overwrites its string data with zeroes upon garbage collection.
+    del(password)
+    
+    # set a new password 
+    config.set('credentials', 'password', 'better_password')
+    
+    fh=open('/path/to/config.json.enc', 'w')
     config.write(fh)
     fh.close()
 
