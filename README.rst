@@ -97,7 +97,7 @@ currently exists or not.  If this place is not writeable, you'll get your OS's u
 error for an attempted operation.
 
 When proactive=False and locations do not exist, you'll get a KeyError for environment
-variables or an OSError for file operations.
+variables or an OSError for 
 
 If CryptKeeper classes are instantiated without a key argument, they will generate
 a key automatically for you. 
@@ -166,9 +166,8 @@ SecureJson
 SecureJson is a very simple wrapper around JSON data. It decrypts whole files
 (or whole strings) and can encrypt new configurations as well.
 
-Use one of the cryptkeeper classmethods above to instantiate with a key.
-
-SecureJson will happily process plaintext data as well if no key is supplied.
+Use one of the cryptkeeper classmethods above to instantiate with a key. SecureJson will 
+happily process plaintext data as well if no key is supplied.
 
 SecureJson is a subclass of SecureConfig (see below), and as such, as some
 ConfigParser-like operations included.
@@ -232,7 +231,7 @@ Basic Usage (CHANGED SINCE 0.1.0):
 
     from secureconfig import SecureConfig, SecureString
 
-    config = SecureJson.from_file('.keys/aes_key')
+    config = SecureConfig.from_file('.keys/aes_key', filepath='/path/to/serialized.enc')
 
     cfg = config.cfg
 
