@@ -2,4 +2,5 @@
 0.0.2, 3/21/2014 -- added safe_pwgen to utils. actual for-real README this time.
 0.0.2.1, 3/21/2014 -- fixed formatting and forgotten details in README.
 0.0.2.2, 3/21/2014 -- critical fix to zeromem (misnamed the function 'zero')
-0.0.3.1, 4/21/2014 -- major overhaul and major features added. SecureConfigParser and SecureString implemented, with cryptkeeper submodule now doing the work of holding the key and doing en/decryption. cryptkeeper_access_methods provide from_key, from_env, and from_file class methods for all SecureConfig* classes.
+0.1.0, 4/21/2014 -- major overhaul and major features added. SecureConfigParser and SecureString implemented, with cryptkeeper submodule now doing the work of holding the key and doing en/decryption. cryptkeeper_access_methods provide from_key, from_env, and from_file class methods for all SecureConfig* classes.
+0.1.0.1, 4/22/2014 -- Finishing up documentation for 0.1.x
