@@ -50,6 +50,6 @@ setup (
     license = "MIT",
     zip_safe = True,
     packages = find_packages(),
-    setup_requires = [ ],
+    install_requires = [ 'cryptography', 'configparser' ],
     )
 

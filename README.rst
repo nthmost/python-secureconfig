@@ -111,6 +111,42 @@ All of the SecureConfig* classes can be used with or without encryption keys,
 although you'll get a SecureConfigException('bad data or no encryption key') if
 you try to parse a data structure (such as JSON) out of encrypted text.
 
+Finally, in secureconfig is a class called SecureString, which is a subclass of the
+string object. Its special function is to zero out the memory location of the string
+payload. This class has its own section and explanation at the bottom.
+
+SecureString must be considered HAZARDOUS MATERIALS and not implicitly trusted.
+See below for why.
+
+
+
+SecureString
+------------
+
+SecureString is a subclass of the string object with one modification: when deleted
+and garbage-collected by python, or when its .burn() function is called, which 
+explicitly zeroes out the data.
+
+Now this documentation must spend due time convincing you why it is not "secure".
+
+Python generally tries to create references to 'payload' data in memory rather than
+copy payloads whenever possible, but in those and other scenarios, you may wind up
+having string data copied into other locations, and SecureString won't have any idea.
+
+In the scenarios above, SecureString can be trusted to zero-out the string data 
+completely.  Outside of these strict scenarios, a number of circumstances will create
+copies of your sensitive data in memory::
+
+    * concatenation of strings 
+    * use of the comparison operator on strings found in a list or dictionary 
+
+Basically, you must keep in mind that, even if you del(secure_string) and explicitly
+run gc.collect(), your string will still be in memory if there are still references
+to that string lying around in other objects.
+
+Thus, SecureString cannot, at this time, be implicitly trusted as "secure". It 
+depends heavily on how you use it.
+
 
 SecureConfigParser
 ------------------
@@ -144,13 +180,13 @@ In addition, you can set new values into the config to be encrypted by supplying
     scfg = SecureConfigParser.from_env('SCP_INI_KEY')
     scfg.read(configpath)
 
-    user = scfg.get('credentials', 'username')
-    pass = SecureString(scfg.get('credentials', 'password'))
+    username = scfg.get('credentials', 'username')
+    password = SecureString(scfg.get('credentials', 'password'))
         
     connection = GetSomeConnection(username, password)
 
     # SecureString overwrites its string data with zeroes upon garbage collection.
-    del(pass)
+    del(password)
 
     # IMPORTANT: supply encrypt=True to encrypt values.
     config.set('credentials', 'password', 'better_password', encrypt=True)
