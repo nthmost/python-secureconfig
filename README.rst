@@ -181,10 +181,10 @@ In addition, you can set new values into the config to be encrypted by supplying
     connection = GetSomeConnection(username, password)
 
     # IMPORTANT: supply encrypt=True to encrypt values.
-    config.set('credentials', 'password', 'better_password', encrypt=True)
+    scfg.set('credentials', 'password', 'better_password', encrypt=True)
     
     fh=open('/path/to/new_scfp.ini', 'w')
-    config.write(fh)
+    scfg.write(fh)
     fh.close()
 
 
@@ -272,6 +272,8 @@ Basic Usage (CHANGED SINCE 0.1.0):
 SecureString
 ------------
 
+"RAM security is haaaard" --Noah Kantrowitz, https://twitter.com/kantrn/status/461654722558963712
+
 SecureString is a subclass of the string object with one modification: when deleted
 and garbage-collected by python, or when its .burn() function is called, which 
 explicitly zeroes out the data.
@@ -282,10 +284,11 @@ Python generally tries to create references to 'payload' data in memory rather t
 copy payloads whenever possible, but in those and other scenarios, you may wind up
 having string data copied into other locations, and SecureString won't have any idea.
 
-In the scenarios above, SecureString can be trusted to zero-out the string data 
-completely.  Outside of these strict scenarios, a number of circumstances will create
-copies of your sensitive data in memory, such as concatenation of strings and use of 
-the comparison operator on strings held in lists. 
+In a "tight" scenario, e.g. where SecureString could be used to receive the `password` 
+and then immediately be "burned after reading", SecureString can be trusted to zero
+out the string data completely.  Outside of these strict scenarios, a number of 
+circumstances will create copies of your sensitive data in memory, such as 
+concatenation of strings and use of the comparison operator on strings held in lists. 
 
 You must also keep in mind that, even if you del(secure_string) and explicitly
 run gc.collect(), your string will still be in memory if there are still references
