@@ -120,6 +120,29 @@ See below for why.
 
 
 
+Installation and Requirements
+-----------------------------
+
+To install secureconfig, you'll need to have the development libraries for libffi
+and libssl installed on your system.  On ubuntu, therefore, you'd do this::
+
+   sudo apt-get install libffi-dev libssl-dev
+
+Beyond this requirement, most users will find they can install secureconfig via pip:
+
+   pip install secureconfig 
+
+The following requirements form the backbone of secureconfig::
+
+   cryptography
+   configparser
+   cffi
+   six
+   pycparser
+
+If you have any problems installing these requirements, please let the 
+maintainer of this package know at https://bitbucket.com/nthmost/python-secureconfig
+
 SecureConfigParser
 ------------------
 
@@ -142,7 +165,7 @@ In addition, you can set new values into the config to be encrypted by supplying
 
 .. code-block:: python
 
-    from secureconfig import SecureConfigParser, SecureString
+    from secureconfig import SecureConfigParser
 
     # starting with an ini file that has unencrypted entries:
     configpath = '/etc/app/config.ini'
@@ -153,12 +176,9 @@ In addition, you can set new values into the config to be encrypted by supplying
     scfg.read(configpath)
 
     username = scfg.get('credentials', 'username')
-    password = SecureString(scfg.get('credentials', 'password'))
+    password = scfg.get('credentials', 'password')
         
     connection = GetSomeConnection(username, password)
-
-    # SecureString overwrites its string data with zeroes upon garbage collection.
-    del(password)
 
     # IMPORTANT: supply encrypt=True to encrypt values.
     config.set('credentials', 'password', 'better_password', encrypt=True)
@@ -185,7 +205,7 @@ Basic usage (CHANGED SINCE 0.1.0):
 
 .. code-block:: python
 
-    from secureconfig import SecureJson, SecureString
+    from secureconfig import SecureJson
 
     configpath = '/etc/app/config.json.enc'
 
@@ -237,20 +257,16 @@ Basic Usage (CHANGED SINCE 0.1.0):
 
 .. code-block:: python
 
-    from secureconfig import SecureConfig, SecureString
+    from secureconfig import SecureConfig
 
     config = SecureConfig.from_file('.keys/aes_key', filepath='/path/to/serialized.enc')
 
     cfg = config.cfg
 
     username = cfg['username']
-    password = SecureString(cfg['password'])
+    password = cfg['password']
 
     connection = GetSomeConnection(username, password)
-
-    # password's string data will be overwritten with zeroes when garbage-collected.
-    del(password)
-
 
 
 SecureString
@@ -277,7 +293,9 @@ to that string lying around in other objects.
 
 Also, if your python program does not complete gracefully, garbage collection may
 not run completely or at all, so SecureString memory will not be wiped.  If you want
-to insert gc.collect() statements to 
+to insert gc.collect() statements to proactively scrape these strings, that is an
+option, but there can be performance drawbacks to aggressively running garbage 
+collection operations.
 
 Finally, different python interpreters handle memory differently, and SecureConfig 
 hasn't yet been tested on more than just the standard python interpreter and the
@@ -299,8 +317,8 @@ Planned features include::
 CONTACT
 -------
 
-Look for @nthmost on Twitter if you're interested and would like to contribute!
-Comments and critiques warmly welcomed.
+Look for @nthmost on bitbucket if you're interested and would like to contribute!
+Comments, critiques, and bug reports warmly welcomed.  Pull requests encouraged.
 
 --Naomi Most, spring 2014.
 

@@ -6,3 +6,4 @@
 0.1.0.1, 4/22/2014 -- Finishing up documentation for 0.1.x
 0.1.0.2, 4/22/2014 -- Documentation bugfix in one of the examples.
 0.1.0.3, 4/27/2014 -- Documentation of SecureString. setup.py now installs all required dependencies.
+0.1.0.4, 5/9/2014 -- removed SecureString from code examples, added Installation notes.
