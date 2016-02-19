@@ -54,16 +54,16 @@ def write_config(cfg, filename):
     cfg.write(fh)
     fh.close()
     DETRITUS.append(path)
-    
+
 
 class TestSecureConfigParser(unittest.TestCase):
 
     @classmethod
-    def setup_module(cls):
+    def setUpClass(cls):
         create_test_ini()
 
     @classmethod
-    def teardown_module(cls):
+    def tearDownClass(cls):
         #delete_test_ini()
         print("Created files: ")
         print(DETRITUS)
@@ -83,7 +83,7 @@ class TestSecureConfigParser(unittest.TestCase):
         scfg.read(TEST_INI)
         scfg.set(testd['section'], testd['enc']['key'], testd['enc']['raw_val'], encrypt=True)
         
-        result = scfg.raw_get(testd['section'], testd['enc']['key']) 
+        result = scfg.raw_get(testd['section'], testd['enc']['key'])
         self.assertFalse(result == testd['enc']['raw_val'])
         self.assertTrue(result.startswith(scfg.ck.sigil))
         self.assertTrue(scfg.get(testd['section'], testd['enc']['key']) == testd['enc']['raw_val'])
@@ -116,7 +116,7 @@ class TestSecureConfigParser(unittest.TestCase):
     def test_wrong_ck_raises_InvalidToken(self):
         scfg = SecureConfigParser(ck=self.ck_wrong)
         scfg.read(TEST_INI_OUTFILE)
-        self.assertRaises(InvalidToken, scfg.get(testd['section'], testd['enc']['key'])) 
+        self.assertRaises(InvalidToken, scfg.get(testd['section'], testd['enc']['key']))
 
 
 if __name__ == '__main__':
