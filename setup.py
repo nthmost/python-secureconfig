@@ -23,7 +23,7 @@ class sdist(_sdist):
     def run(self):
         # Make sure the compiled Cython files in the distribution are up-to-date
         from Cython.Build import cythonize
-        print "cythonizing..."
+        print ("cythonizing...")
         cythonize(['cython/mycythonmodule.pyx'])
         _sdist.run(self)
 cmdclass['sdist'] = sdist
@@ -31,7 +31,7 @@ cmdclass['sdist'] = sdist
 if use_cython:
     ext_modules += [ Extension('secureconfig.zeromem', sources=['secureconfig/zeromem.pyx']), ]
     cmdclass.update({ 'build_ext': build_ext })
-    print cmdclass
+    print (cmdclass)
 else:
     ext_modules += [ Extension('secureconfig.zeromem', sources=['secureconfig/zeromem.c']), ]
 
