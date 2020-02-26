@@ -1,11 +1,20 @@
 from __future__ import print_function, absolute_import
 
 import sys
+import six
 
 import cryptography
 
 from .baseclass import cryptkeeper_access_methods
-from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+if six.PY3:
+    try:
+        # New style
+        from configparser import ConfigParser, NoSectionError, NoOptionError
+    except ImportError:
+        # Old style
+        from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+else:
+    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 
 # SECURECONFIG pattern:
