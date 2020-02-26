@@ -65,6 +65,4 @@ if __name__ == '__main__':
     sjson.write("test_securejson.json.enc")
 
     newjson = SecureJson(filepath="test_securejson.json.enc", keyloc=".keys", readonly=True)
-    print newjson.cfg
-    
-
+    print(newjson.cfg)
