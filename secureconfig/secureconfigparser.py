@@ -6,6 +6,7 @@ import six
 import cryptography
 
 from .baseclass import cryptkeeper_access_methods
+
 if six.PY3:
     try:
         # New style
@@ -41,47 +42,47 @@ else:
 # /me crosses her fingers
 
 class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
-    '''A subclass of ConfigParser py:class::ConfigParser which decrypts certain entries.'''
+    """A subclass of ConfigParser py:class::ConfigParser which decrypts certain entries."""
 
     def __init__(self, *args, **kwargs):
-        
+
         # supplied by cryptkeeper_access_methods
-        self.ck = kwargs.pop('ck', None) 
-        
+        self.ck = kwargs.pop('ck', None)
+
         ConfigParser.__init__(self, *args, **kwargs)
-    
+
     def read(self, filenames):
-        '''Read the list of config files.'''
-        #print("[DEBUG] filenames: ", filenames)
+        """Read the list of config files."""
+        # print("[DEBUG] filenames: ", filenames)
         ConfigParser.read(self, filenames)
 
     def raw_get(self, sec, key, default=None):
-        '''Get the raw value without decoding it.'''
+        """Get the raw value without decoding it."""
         try:
             return ConfigParser.get(self, sec, key)
-            #return super(SecureConfigParser, self).get(sec, key)
+            # return super(SecureConfigParser, self).get(sec, key)
         except (NoSectionError, NoOptionError):
             return default
         except Exception as e:
             print("[DEBUG]", sys.exc_info()[0])
-            
+
     def raw_set(self, sec, key, val):
-        '''Set the value without encrypting it.'''
-        return ConfigParser.set(self, sec, key, val) 
+        """Set the value without encrypting it."""
+        return ConfigParser.set(self, sec, key, val)
 
     def raw_items(self, sec):
-        '''Return the items in a section without decrypting the values.'''
+        """Return the items in a section without decrypting the values."""
         return ConfigParser.items(self, sec)
 
     def val_decrypt(self, raw_val, **kwargs):
-        '''Decrypt supplied value if it appears to be encrypted.'''
+        """Decrypt supplied value if it appears to be encrypted."""
         if self.ck and raw_val.startswith(self.ck.sigil):
             return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1])
         else:
             return raw_val
 
     def get(self, sec, key, default=None):
-        '''Get the value from the config, possibly decrypting it.'''
+        """Get the value from the config, possibly decrypting it."""
         raw_val = self.raw_get(sec, key)
         if raw_val is None:
             return default
@@ -90,31 +91,31 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
         return val
 
     def set(self, sec, key, new_val, encrypt=False):
-        '''If the value should be secured, encrypt and update it; 
+        """If the value should be secured, encrypt and update it;
             Otherwise just update it.  supply encrypt=True to encrypt
             a value that was not previously encrypted.
-        '''
+        """
         if not self.has_option(sec, key):
-            if encrypt==True:
+            if encrypt:
                 new_val = self.ck.sigil + self.ck.encrypt(new_val)
             return self.raw_set(sec, key, new_val)
-        
+
         old_raw_val = self.raw_get(sec, key)
 
-        if old_raw_val.startswith(self.ck.sigil) or encrypt==True:
+        if old_raw_val.startswith(self.ck.sigil) or encrypt:
             new_val = self.ck.sigil + self.ck.encrypt(new_val)
             return self.raw_set(sec, key, new_val)
 
         return self.raw_set(sec, key, new_val)
 
     def items(self, sec):
-        '''Iterate over the items; decoding the values.'''
+        """Iterate over the items; decoding the values."""
         for (key, val) in self.raw_items(sec):
             val = self.val_decrypt(val, sec=sec, key=key)
-            yield (key, val)
+            yield key, val
 
     def print_decrypted(self):
-        '''Print the file with all the values decrypted.'''
+        """Print the file with all the values decrypted."""
         for sec in self.sections():
             print("[%s]" % sec)
             for (key, val) in self.items(sec):
