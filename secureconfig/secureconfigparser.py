@@ -59,7 +59,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
     def raw_get(self, sec, key, default=None):
         """Get the raw value without decoding it."""
         try:
-            return ConfigParser.get(self, sec, key)
+            return ConfigParser.get(self, sec, key, raw=True)
             # return super(SecureConfigParser, self).get(sec, key)
         except (NoSectionError, NoOptionError):
             return default
@@ -77,7 +77,10 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
     def val_decrypt(self, raw_val, **kwargs):
         """Decrypt supplied value if it appears to be encrypted."""
         if self.ck and raw_val.startswith(self.ck.sigil):
-            return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1])
+            if six.PY3:
+                return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1].encode()).decode()
+            else:
+                return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1])
         else:
             return raw_val
 
@@ -97,7 +100,10 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
         """
         if not self.has_option(sec, key):
             if encrypt:
-                new_val = self.ck.sigil + self.ck.encrypt(new_val)
+                if six.PY3:
+                    new_val = self.ck.sigil + self.ck.encrypt(new_val.encode()).decode()
+                else:
+                    new_val = self.ck.sigil + self.ck.encrypt(new_val)
             return self.raw_set(sec, key, new_val)
 
         old_raw_val = self.raw_get(sec, key)
