@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import
 
 import os
+import six
 
 from cryptography.fernet import Fernet, InvalidToken
 
@@ -148,8 +149,12 @@ class EnvCryptKeeper(CryptKeeper):
 
     def store(self):
         """store currently active key into environment variable"""
-        os.environ[self.env] = self.key
-        os.putenv(self.env, self.key)
+        if six.PY3:
+            os.environ[self.env] = self.key.decode()
+            os.putenv(self.env, self.key.decode())
+        else:
+            os.environ[self.env] = self.key
+            os.putenv(self.env, self.key)
 
     def load(self):
         """retrieve key from environment variable"""
