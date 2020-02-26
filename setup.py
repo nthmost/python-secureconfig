@@ -70,7 +70,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         'cryptography',
-        'configparser'
+        'configparser',
+        'six'
     ],
 )
 
