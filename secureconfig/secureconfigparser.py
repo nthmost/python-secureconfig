@@ -72,7 +72,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
 
     def raw_items(self, sec):
         """Return the items in a section without decrypting the values."""
-        return ConfigParser.items(self, sec)
+        return ConfigParser.items(self, sec, raw=True)
 
     def val_decrypt(self, raw_val, **kwargs):
         """Decrypt supplied value if it appears to be encrypted."""
