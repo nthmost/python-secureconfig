@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 from ast import literal_eval
 
-from .zeromem import zeromem
 from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper, cryptkeeper_access_methods
 from .exceptions import ReadOnlyConfigError, SecureConfigException
 
@@ -24,26 +23,26 @@ __doc__ = '''SecureConfig base class for simplifying load of encrypted config fi
 
 
 class SecureConfig(cryptkeeper_access_methods):
-    '''Builds a SecureConfig object. 
-    
+    """Builds a SecureConfig object.
+
     Without any arguments, SecureConfig.__init__ is a blank slate into which you can
     load dictionary-based data directly into cfg.
-    
+
     To decrypt data, SecureConfig requires a CryptKeeper object, but the following class
     methods help set this up for you:
 
         SecureConfig.from_key(keystring)
-        SecureConfig.from_file(keyfilename)    
+        SecureConfig.from_file(keyfilename)
         SecureConfig.from_env(key_environment_variable_name)
 
     Otherwise, supply a CryptKeeper object directly:
-    
+
         SecureConfig(ck=CryptKeeper(key=some_key))
 
-    If ck==None, SecureConfig will attempt to read the file as if it were stored 
+    If ck==None, SecureConfig will attempt to read the file as if it were stored
     exclusively in plaintext and throws SecureConfigException if it cannot be parsed.
 
-    `readonly` param ensures that .set() and .write() cannot be used. 
+    `readonly` param ensures that .set() and .write() cannot be used.
 
         :param filepath:   absolute or relative path to real file on disk.
         :param rawtxt:     string containing encrypted configuration string.
@@ -51,7 +50,7 @@ class SecureConfig(cryptkeeper_access_methods):
         :param ck:         CryptKeeper object (see secureconfig.cryptkeeper)
 
         :return: SecureConfig object with .cfg dictionary.
-    '''
+    """
 
     def __init__(self, filepath='', rawtxt='', readonly=False, **kwargs):
 
@@ -98,7 +97,7 @@ class SecureConfig(cryptkeeper_access_methods):
         return '%r' % self.cfg
        
     def get(self, section, param):
-        '''provides ConfigParser-like interface retrieve variables from sections.
+        """provides ConfigParser-like interface retrieve variables from sections.
 
         If your config data is shallow, i.e. non-hierarchical, either a TypeError
         or a NameError will be thrown (depending on your data).
@@ -106,12 +105,12 @@ class SecureConfig(cryptkeeper_access_methods):
         :param section:  top-level "section" of configuration.
         :param param:    parameter within "section" whose value will be returned.
 
-        '''
+        """
         return self.cfg[section][param]
 
     def remove_section(self, section):
-        '''Remove the specified section from the configuration. If the section in fact 
-            existed, return True. Otherwise return False.'''
+        """Remove the specified section from the configuration. If the section in fact
+            existed, return True. Otherwise return False."""
         try:
             self.cfg.pop(section)
             return True
@@ -119,38 +118,38 @@ class SecureConfig(cryptkeeper_access_methods):
             return False
 
     def add_section(self, section):
-        'Add a section named section to the instance.'
+        """Add a section named section to the instance."""
         if self.cfg.get(section, None):
             raise SecureConfigException('specified section already exists')
         else:
             self.cfg[section] = {}            
 
     def sections(self):
-        'Returns a list of available sections in the config.'
+        """Returns a list of available sections in the config."""
         return list(self.cfg.keys())
 
     def options(self, section):
-        'Returns a list of options available in the specified section.'
+        """Returns a list of options available in the specified section."""
         return list(self.cfg[section].keys())
 
     def set(self, section, param, value):
-        '''if .readonly=False, allows set of param in "section" to value.
+        """if .readonly=False, allows set of param in "section" to value.
 
         If your config data is 1-dimensional, TypeError will be thrown.
-        
+
         If "section" does not exist, KeyError will be thrown.
 
         :param section:  top-level "section" of configuration.
         :param param:    parameter to set within "section".
         :param value:    new value for param.
-        '''
+        """
         if self.readonly:
             raise ReadOnlyConfigError
         else:
             self.cfg[section][param] = value
 
     def write(self, fh=None):
-        '''if .readonly=False, serializes, encrypts (if key) writing to specified filehandle.'''
+        """if .readonly=False, serializes, encrypts (if key) writing to specified filehandle."""
         if self.readonly:
             raise ReadOnlyConfigError
         try:

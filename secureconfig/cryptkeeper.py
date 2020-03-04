@@ -1,6 +1,7 @@
 from __future__ import print_function, absolute_import
 
 import os
+import six
 
 from cryptography.fernet import Fernet, InvalidToken
 
@@ -31,34 +32,37 @@ from .securestring import SecureString
 #       * Initialization vectors are generated using os.urandom().
 #
 
+
 def encrypt_string(key, input):
     ck = CryptKeeper(key)
     return ck.encrypt(input)
+
 
 def verify_key(key, teststr = 'test string'):
     # see if key can be used to encrypt and decrypt successfully.
     ck = CryptKeeper(key)
     try:
         enctxt = ck.encrypt(teststr)
-        #print(enctxt)
+        # print(enctxt)
         assert(teststr == ck.decrypt(enctxt))
     except Exception as e:
         print(e)
         return False
 
+
 class cryptkeeper_access_methods(object):
-    '''not to be used directly; subclass to make objects with a standardized array
-     of encryption classmethods based on what's available in cryptkeeper'''
+    """not to be used directly; subclass to make objects with a standardized array
+     of encryption classmethods based on what's available in cryptkeeper"""
 
     @classmethod
     def from_env(cls, keyenv, *args, **kwargs):
-        'required argument: keyenv (name of environment variable)'
+        """required argument: keyenv (name of environment variable)"""
         kwargs['ck'] = EnvCryptKeeper(keyenv)
         return cls(*args, **kwargs)
 
     @classmethod
     def from_file(cls, keyloc, *args, **kwargs):
-        'required argument: keyloc (path to file containing key)'
+        """required argument: keyloc (path to file containing key)"""
         kwargs['ck'] = FileCryptKeeper(keyloc)
         return cls(*args, **kwargs)
 
@@ -77,9 +81,9 @@ class CryptKeeper(object):
         return Fernet.generate_key()
 
     def __init__(self, *args, **kwargs):
-        '''base CryptKeeper class. Supply key=string to provide key,
-        or allow CryptKeeper to generate a new key when instantiated 
-        without arguments.'''
+        """base CryptKeeper class. Supply key=string to provide key,
+        or allow CryptKeeper to generate a new key when instantiated
+        without arguments."""
     
         self.key = kwargs.get('key', None)
         self.sigil = kwargs.get('sigil', self.sigil_base % 'FERNET')
@@ -101,42 +105,41 @@ class CryptKeeper(object):
             raise Exception('no key supplied or key location does not exist')
 
     def _key_exists(self):
-        'override for key storage based classes'
+        """override for key storage based classes"""
         if self.key:
             return True
     
     def _clean_key(self, key):
-        'ensures a key free of surrounding whitespace and newlines.'
+        """ensures a key free of surrounding whitespace and newlines."""
         return key.strip()
 
     def _gen_key(self):
-        'generates a new Fernet-based encryption key'
+        """generates a new Fernet-based encryption key"""
         return Fernet.generate_key()
         
     def encrypt(self, inp):
-        'takes plaintext string and returns encrypted string'
+        """takes plaintext string and returns encrypted string"""
         return self.crypter.encrypt(inp)
         
     def decrypt(self, inp):
-        'takes encrypted string and returns plaintext string' 
+        """takes encrypted string and returns plaintext string"""
         return self.crypter.decrypt(inp)
     
     def store(self):
-        'override for key storage based classes'
+        """override for key storage based classes"""
         pass
         
     def load(self):
-        'override for key storage based classes'
+        """override for key storage based classes"""
         return self.key
-
 
 
 class EnvCryptKeeper(CryptKeeper):
 
     def __init__(self, env, *args, **kwargs):
-        '''Loads a key from env.  If proactive==True (default: False) and no key is 
-        present at env, EnvCryptKeeper creates a key for you at this environment 
-        variable.'''
+        """Loads a key from env.  If proactive==True (default: False) and no key is
+        present at env, EnvCryptKeeper creates a key for you at this environment
+        variable."""
     
         self.env = env
         super(EnvCryptKeeper, self).__init__(*args, **kwargs)
@@ -145,46 +148,51 @@ class EnvCryptKeeper(CryptKeeper):
         return os.environ.get(self.env, None)
 
     def store(self):
-        'store currently active key into environment variable'
-        os.environ[self.env] = self.key
-        os.putenv(self.env, self.key)
+        """store currently active key into environment variable"""
+        if six.PY3:
+            os.environ[self.env] = self.key.decode()
+            os.putenv(self.env, self.key.decode())
+        else:
+            os.environ[self.env] = self.key
+            os.putenv(self.env, self.key)
 
     def load(self):
-        'retrieve key from environment variable'
+        """retrieve key from environment variable"""
         return os.environ[self.env]
 
 
 class FileCryptKeeper(CryptKeeper):
 
     def __init__(self, path, *args, **kwargs):
-        '''loads a key from supplied path.
-        
+        """loads a key from supplied path.
+
         If proactive==True (default: False) and file cannot be loaded at
         supplied path, FileCryptKeeper creates this file to store key within.
-        
+
         If directory cannot be written to, FileCryptKeeper raises OSError
         (i.e. it will not also try to create a directory.)
 
         Supply paranoid=False to turn off directory permission checks.
-        (DANGER, WILL ROBINSON!)        
-        '''
+        (DANGER, WILL ROBINSON!)
+        """
         
         self.path = path
         self.paranoid = kwargs.get('paranoid', True)
         super(FileCryptKeeper, self).__init__(*args, **kwargs)
 
     def _key_exists(self):
-        #TODO TODO TODO
-        #if self.paranoid:
-        #   check permissions on file and path.
-        #   if sketchy, raise Exception informing user of sketchiness.
+        """ Check if file path exists and is writable"""
+        # TODO: Should this only be done if we are paranoid?
+        if self.paranoid:
+            if not os.access(self.path, os.F_OK) or not os.access(self.path, os.W_OK):
+                raise Exception('Invalid File Permissions')
         return os.path.exists(self.path)
         
     def store(self):
-        'store currently active key into file at self.path'
+        """store currently active key into file at self.path"""
         open(self.path, 'wb').write(self.key)
     
     def load(self):
-        'retrieve key from file at self.path (supplied at instantiation)'
+        """retrieve key from file at self.path (supplied at instantiation)"""
         return open(self.path, 'rb').read()
 
