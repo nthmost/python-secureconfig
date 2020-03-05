@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import unittest
 import cryptography
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 from cryptography.fernet import InvalidToken
 
