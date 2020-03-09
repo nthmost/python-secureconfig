@@ -2,7 +2,17 @@ from __future__ import print_function
 
 import unittest
 import cryptography
-from configparser import ConfigParser
+import six
+if six.PY3:
+    try:
+        # New style
+        from configparser import ConfigParser
+    except ImportError:
+        # Old style
+        from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+else:
+    from ConfigParser import ConfigParser
+
 
 from cryptography.fernet import InvalidToken
 

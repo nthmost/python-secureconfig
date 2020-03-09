@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-
+import six
 from ast import literal_eval
 
 from .cryptkeeper import CryptKeeper, EnvCryptKeeper, FileCryptKeeper, cryptkeeper_access_methods
@@ -79,16 +79,24 @@ class SecureConfig(cryptkeeper_access_methods):
             self.cfg = {}
 
     def _decrypt(self, buf):
-        return self.ck.crypter.decrypt(buf)
+        print('type: %s' % type(buf))
+        print('type: %s' % buf)
+        if six.PY3:
+            return self.ck.crypter.decrypt(buf).decode()
+        else:
+            return self.ck.crypter.decrypt(buf)
 
     def _encrypt(self, buf):
-        return self.ck.crypter.encrypt(buf)
+        if six.PY3:
+            return self.ck.crypter.encrypt(buf.encode()).decode()
+        else:
+            return self.ck.crypter.encrypt(buf)
 
     def _fill(self, txt=''):
         self.cfg = literal_eval(txt)
 
     def _read(self, filepath):
-        return open(filepath, 'rb' ).read()
+        return open(filepath, 'rb').read()
 
     def _serialize(self):
         return '%r' % self.cfg

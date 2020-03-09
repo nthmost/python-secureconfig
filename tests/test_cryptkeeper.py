@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+import six
 import unittest
 import cryptography
 
@@ -39,20 +39,32 @@ class TestCryptKeeper(unittest.TestCase):
 
     def test_FileCK_creates_keyfile(self):
         assert(os.path.exists(TEST_KEYFILE_PATH))
-        assert(self.file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
+        if six.PY3:
+            assert(self.file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip().encode())
+        else:
+            assert(self.file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
 
     def test_EnvCK_creates_env(self):
         assert(os.environ.get(TEST_KEYENV_NAME, False))
-        assert(os.environ.get(TEST_KEYENV_NAME) == self.env_ck.key)
+        if six.PY3:
+            assert(os.environ.get(TEST_KEYENV_NAME).encode() == self.env_ck.key)
+        else:
+            assert(os.environ.get(TEST_KEYENV_NAME) == self.env_ck.key)
 
     def test_EnvCK_from_env(self):
         os.putenv('ARBITRARY_ENV_NAME', TEST_KEYSTRING)
         env_ck = EnvCryptKeeper('ARBITRARY_ENV_NAME')
-        assert(env_ck.key == os.environ['ARBITRARY_ENV_NAME'])
+        if six.PY3:
+            assert(env_ck.key == os.environ['ARBITRARY_ENV_NAME'].encode())
+        else:
+            assert(env_ck.key == os.environ['ARBITRARY_ENV_NAME'])
 
     def test_FileCK_from_file(self):
         file_ck = FileCryptKeeper(TEST_KEYFILE_PATH)
-        assert(file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
+        if six.PY3:
+            assert(file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip().encode())
+        else:
+            assert(file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
 
     def test_StringCK_key_eq_key(self):
         self.assertEquals(self.string_ck.key, TEST_KEYSTRING)
@@ -65,7 +77,7 @@ class TestCryptKeeper(unittest.TestCase):
 
     def test_wrong_key_raises_InvalidToken(self):
         enctxt = encrypt_string(TEST_KEYSTRING, 'test string')
-        self.failUnlessRaises(InvalidToken, self.string_ck_wrong.decrypt, enctxt)
+        self.assertRaises(InvalidToken, self.string_ck_wrong.decrypt, enctxt)
 
     def test_clean_key(self):
         key_with_whitespace = '\n' + TEST_KEYSTRING + '  '

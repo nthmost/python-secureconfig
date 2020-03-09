@@ -119,11 +119,11 @@ class CryptKeeper(object):
         
     def encrypt(self, inp):
         """takes plaintext string and returns encrypted string"""
-        return self.crypter.encrypt(inp)
+        return self.crypter.encrypt(inp.encode()).decode()
         
     def decrypt(self, inp):
         """takes encrypted string and returns plaintext string"""
-        return self.crypter.decrypt(inp)
+        return self.crypter.decrypt(inp.encode()).decode()
     
     def store(self):
         """override for key storage based classes"""
@@ -142,6 +142,7 @@ class EnvCryptKeeper(CryptKeeper):
         variable."""
     
         self.env = env
+
         super(EnvCryptKeeper, self).__init__(*args, **kwargs)
             
     def _key_exists(self):
@@ -184,8 +185,18 @@ class FileCryptKeeper(CryptKeeper):
         """ Check if file path exists and is writable"""
         # TODO: Should this only be done if we are paranoid?
         if self.paranoid:
-            if not os.access(self.path, os.F_OK) or not os.access(self.path, os.W_OK):
+            if os.path.exists(self.path):
+                if os.path.isfile(self.path):
+                    if not os.access(self.path, os.F_OK) or not os.access(self.path, os.W_OK):
+                        raise Exception('Invalid File Permissions')
+                else:
+                    return False
+            pdir = os.path.dirname(self.path)
+            if not pdir:
+                pdir = '.'
+            if not os.access(pdir, os.W_OK):
                 raise Exception('Invalid File Permissions')
+
         return os.path.exists(self.path)
         
     def store(self):

@@ -20,6 +20,7 @@ TEST_JSON_OUTFILE = os.path.join(CWD, 'test.json.enc')
 
 
 def create_test_json():
+    print('Creating JSON file')
     testd = { 'things': {1: 'red', 2: 'blue'}, 'accessories': {'cat': 'hat', 'fish': 'bowl'}}
     open(TEST_JSON, 'w').write(json.dumps(testd))
 
@@ -69,5 +70,7 @@ class TestSecureConfig(unittest.TestCase):
         sj = SecureJson.from_key(TEST_KEYSTRING, filepath=TEST_JSON_OUTFILE)
         self.assertTrue( type(sj.cfg)== type({}) )
 
+
 if __name__ == '__main__':
+    create_test_json()
     unittest.main()
