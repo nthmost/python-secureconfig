@@ -201,7 +201,9 @@ class FileCryptKeeper(CryptKeeper):
         
     def store(self):
         """store currently active key into file at self.path"""
-        open(self.path, 'wb').write(self.key)
+        with open(self.path, 'wb') as fh:
+            fh.write(self.key)
+            fh.close()
     
     def load(self):
         """retrieve key from file at self.path (supplied at instantiation)"""

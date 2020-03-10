@@ -12,7 +12,7 @@ def get_from_mem(ctypes_tuple):
     # TODO: break in ctypes, returns undecodable binary string
     location = ctypes_tuple[0]
     size = ctypes_tuple[1]
-    return ctypes.string_at(location, size)
+    return str(ctypes.string_at(location, size))
 
 
 def learn_mem(item):
