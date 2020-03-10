@@ -13,6 +13,7 @@ if six.PY3:
 else:
     from ConfigParser import ConfigParser
 
+
 from cryptography.fernet import InvalidToken
 
 from secureconfig.cryptkeeper import *
