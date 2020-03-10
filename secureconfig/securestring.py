@@ -1,5 +1,5 @@
 from __future__ import print_function, absolute_import
-
+import six
 from .zeromem import zeromem
 
 
@@ -11,11 +11,17 @@ class SecureString(str):
         self._string = anystring
 
     def burn(self):
-        zeromem(self._string)
-    
+        if six.PY3:
+            zeromem(self._string.encode())
+        else:
+            zeromem(self._string)
+
     def __del__(self):
         # print("I'm being deleted!")
-        zeromem(self._string)
+        if six.PY3:
+            zeromem(self._string.encode())
+        else:
+            zeromem(self._string)
 
     def __str__(self):
         return self._string

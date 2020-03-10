@@ -17,8 +17,10 @@ TEST_KEYFILE_PATH = os.path.join(CWD, 'ck_test_key')
 
 TEST_BAD_KEY = 'YOUR_MOM='
 
+
 def assure_clean_env():
     os.environ[TEST_KEYENV_NAME] = ''
+
 
 class TestCryptKeeper(unittest.TestCase):
 
@@ -40,7 +42,10 @@ class TestCryptKeeper(unittest.TestCase):
     def test_FileCK_creates_keyfile(self):
         assert(os.path.exists(TEST_KEYFILE_PATH))
         if six.PY3:
-            assert(self.file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip().encode())
+            with open(TEST_KEYFILE_PATH, 'r') as fh:
+                tmp = fh.read().strip().encode()
+                fh.close()
+            assert(self.file_ck.key == tmp)
         else:
             assert(self.file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
 
@@ -62,12 +67,15 @@ class TestCryptKeeper(unittest.TestCase):
     def test_FileCK_from_file(self):
         file_ck = FileCryptKeeper(TEST_KEYFILE_PATH)
         if six.PY3:
-            assert(file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip().encode())
+            with open(TEST_KEYFILE_PATH, 'r') as fh:
+                tmp = fh.read().strip().encode()
+                fh.close()
+            assert(file_ck.key == tmp)
         else:
             assert(file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
 
     def test_StringCK_key_eq_key(self):
-        self.assertEquals(self.string_ck.key, TEST_KEYSTRING)
+        self.assertEqual(self.string_ck.key, TEST_KEYSTRING)
     
     def test_bad_key_raises_InvalidToken(self):
         try:

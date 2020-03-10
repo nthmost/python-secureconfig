@@ -68,7 +68,7 @@ class cryptkeeper_access_methods(object):
 
     @classmethod
     def from_key(cls, key, *args, **kwargs):
-        'required argument: key (string containing key)'
+        """required argument: key (string containing key)"""
         kwargs['ck'] = CryptKeeper(key=key)
         return cls(*args, **kwargs)
 
@@ -205,5 +205,8 @@ class FileCryptKeeper(CryptKeeper):
     
     def load(self):
         """retrieve key from file at self.path (supplied at instantiation)"""
-        return open(self.path, 'rb').read()
+        with open(self.path, 'rb') as fh:
+            tmp = fh.read()
+            fh.close()
+        return tmp
 
