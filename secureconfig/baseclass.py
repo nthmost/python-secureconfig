@@ -79,8 +79,6 @@ class SecureConfig(cryptkeeper_access_methods):
             self.cfg = {}
 
     def _decrypt(self, buf):
-        print('type: %s' % type(buf))
-        print('type: %s' % buf)
         if six.PY3:
             return self.ck.crypter.decrypt(buf).decode()
         else:
@@ -96,7 +94,10 @@ class SecureConfig(cryptkeeper_access_methods):
         self.cfg = literal_eval(txt)
 
     def _read(self, filepath):
-        return open(filepath, 'rb').read()
+        with open(filepath, 'rb') as fh:
+            tmp = fh.read()
+            fh.close()
+        return tmp
 
     def _serialize(self):
         return '%r' % self.cfg

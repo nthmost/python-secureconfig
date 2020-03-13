@@ -1,18 +1,25 @@
 from __future__ import print_function
 
-import unittest, ctypes, sys, gc
+import ctypes
+import gc
+import sys
+import unittest
 
-from secureconfig import SecureString, zeromem
+from secureconfig import SecureString
+
 
 def get_from_mem(ctypes_tuple):
+    # TODO: break in ctypes, returns undecodable binary string
     location = ctypes_tuple[0]
     size = ctypes_tuple[1]
-    return ctypes.string_at(location, size)
+    return str(ctypes.string_at(location, size))
+
 
 def learn_mem(item):
     location = id(item)
     size = sys.getsizeof(item)
     return (location, size)
+
 
 class TestSecureString(unittest.TestCase):
 
@@ -45,7 +52,7 @@ class TestSecureString(unittest.TestCase):
     def test_SecureString_zeroes_on_del(self):
         ss = SecureString("it's a secret23 to everybody")
         ctuple = learn_mem(ss._string)
-        del(ss)
+        del ss
         gc.collect()
         result = get_from_mem(ctuple)
         try:

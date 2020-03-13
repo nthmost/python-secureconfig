@@ -71,7 +71,9 @@ setup(
     install_requires=[
         'cryptography',
         'configparser',
-        'six'
+        'six',
+        'pycrypto',
+        'pyasn1'
     ],
 )
 
