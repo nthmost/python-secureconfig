@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-import six
 from .zeromem import zeromem
 
 
@@ -8,10 +6,7 @@ class SecureString(str):
 
     def __init__(self, anystring):
         super().__init__()
-        if six.PY3:
-            self._string = bytes(anystring, 'utf-8')
-        else:
-            self._string = anystring
+        self._string = bytes(anystring, 'utf-8')
 
     def burn(self):
         zeromem(self._string)

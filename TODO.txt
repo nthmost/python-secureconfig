@@ -1,2 +1,0 @@
-1. implement (more) command-line / fabric tools for cryptography.io
-

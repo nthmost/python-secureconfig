@@ -1,20 +1,14 @@
-from __future__ import print_function, absolute_import
-
 import sys
-import six
 
 import cryptography
 
 from .baseclass import cryptkeeper_access_methods
 
-if six.PY3:
-    try:
-        # New style
-        from configparser import ConfigParser, NoSectionError, NoOptionError
-    except ImportError:
-        # Old style
-        from ConfigParser import ConfigParser, NoSectionError, NoOptionError
-else:
+try:
+    # New style
+    from configparser import ConfigParser, NoSectionError, NoOptionError
+except ImportError:
+    # Old style
     from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 
@@ -72,18 +66,12 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
 
     def raw_items(self, sec):
         """Return the items in a section without decrypting the values."""
-        if six.PY3:
-            return ConfigParser.items(self, sec, raw=True)
-        else:
-            return ConfigParser.items(self, sec)
+        return ConfigParser.items(self, sec, raw=True)
 
     def val_decrypt(self, raw_val, **kwargs):
         """Decrypt supplied value if it appears to be encrypted."""
         if self.ck and raw_val.startswith(self.ck.sigil):
-            if six.PY3:
-                return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1].encode()).decode()
-            else:
-                return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1])
+            return self.ck.crypter.decrypt(raw_val.split(self.ck.sigil)[1].encode()).decode()
         else:
             return raw_val
 
@@ -103,10 +91,7 @@ class SecureConfigParser(ConfigParser, cryptkeeper_access_methods):
         """
         if not self.has_option(sec, key):
             if encrypt:
-                if six.PY3:
-                    new_val = self.ck.sigil + self.ck.encrypt(new_val.encode()).decode()
-                else:
-                    new_val = self.ck.sigil + self.ck.encrypt(new_val)
+                new_val = self.ck.sigil + self.ck.encrypt(new_val.encode()).decode()
             return self.raw_set(sec, key, new_val)
 
         old_raw_val = self.raw_get(sec, key)

@@ -8,3 +8,4 @@
 0.1.0.3, 4/27/2014 -- Documentation of SecureString. setup.py now installs all required dependencies.
 0.1.0.4, 5/9/2014 -- removed SecureString from code examples, added Installation notes.
 0.1.1.0, 5/9/2014 -- fixes Issue #1 (pri:Major) in bitbucket issue tracker (HT @cariaso on bitbucket.org)
+0.2.0, 7/7/2020 -- Python3 compat issues, deprecated python2. Thanks to community submissions for the help!

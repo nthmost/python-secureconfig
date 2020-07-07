@@ -1,5 +1,3 @@
-from __future__ import print_function
-import six
 import unittest
 import cryptography
 
@@ -41,38 +39,26 @@ class TestCryptKeeper(unittest.TestCase):
 
     def test_FileCK_creates_keyfile(self):
         assert(os.path.exists(TEST_KEYFILE_PATH))
-        if six.PY3:
-            with open(TEST_KEYFILE_PATH, 'r') as fh:
-                tmp = fh.read().strip().encode()
-                fh.close()
-            assert(self.file_ck.key == tmp)
-        else:
-            assert(self.file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
+        with open(TEST_KEYFILE_PATH, 'r') as fh:
+            tmp = fh.read().strip().encode()
+            fh.close()
+        assert(self.file_ck.key == tmp)
 
     def test_EnvCK_creates_env(self):
         assert(os.environ.get(TEST_KEYENV_NAME, False))
-        if six.PY3:
-            assert(os.environ.get(TEST_KEYENV_NAME).encode() == self.env_ck.key)
-        else:
-            assert(os.environ.get(TEST_KEYENV_NAME) == self.env_ck.key)
+        assert(os.environ.get(TEST_KEYENV_NAME).encode() == self.env_ck.key)
 
     def test_EnvCK_from_env(self):
         os.putenv('ARBITRARY_ENV_NAME', TEST_KEYSTRING)
         env_ck = EnvCryptKeeper('ARBITRARY_ENV_NAME')
-        if six.PY3:
-            assert(env_ck.key == os.environ['ARBITRARY_ENV_NAME'].encode())
-        else:
-            assert(env_ck.key == os.environ['ARBITRARY_ENV_NAME'])
+        assert(env_ck.key == os.environ['ARBITRARY_ENV_NAME'].encode())
 
     def test_FileCK_from_file(self):
         file_ck = FileCryptKeeper(TEST_KEYFILE_PATH)
-        if six.PY3:
-            with open(TEST_KEYFILE_PATH, 'r') as fh:
-                tmp = fh.read().strip().encode()
-                fh.close()
-            assert(file_ck.key == tmp)
-        else:
-            assert(file_ck.key == open(TEST_KEYFILE_PATH, 'r').read().strip())
+        with open(TEST_KEYFILE_PATH, 'r') as fh:
+            tmp = fh.read().strip().encode()
+            fh.close()
+        assert(file_ck.key == tmp)
 
     def test_StringCK_key_eq_key(self):
         self.assertEqual(self.string_ck.key, TEST_KEYSTRING)

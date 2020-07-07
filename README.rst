@@ -30,7 +30,8 @@ Config styles currently supported::
     Json (see SecureJson) -- whole-data encryption only.
     serialized dictionaries (see SecureConfig) -- whole-data encryption only.
 
-Please let the maintainer (@nthmost) know if you want to see another type supported.
+If you'd like to see another type supported, please file a feature request on GitHub
+at https://github.com/nthmost/python-secureconfig
 
 Purpose
 -------
@@ -47,9 +48,9 @@ for ConfigParser that allows us to keep 99% of the way we interact with
 config files, and simply wraps the decryption step.
 
 Of course, once you have decryption handled, you start to want simplified 
-ways of encrypting as well.
+ways of encrypting as well.  That's why secureconfig supports writing new
+config files.
 
-That's why secureconfig (as of 0.0.3) supports writing new config files.
 See "basic usage" sections below to see how you can easily turn a plaintext
 value or file into an encrypted value or file (depending on config style).
 
@@ -65,9 +66,8 @@ run.  (Turn this off using paranoid=False, if you must.)
 Finally, secureconfig contains a smattering of deployment utilities found in 
 secureconfig.utils.  Feel free to suggest new ones.
 
-This library can be found at https://bitbucket.org/nthmost/python-secureconfig 
-
 Contributions and code/documentation critiques are warmly welcomed.
+See the Contribution section below for information.
 
 
 How secureconfig Works
@@ -137,16 +137,13 @@ The following requirements form the backbone of secureconfig::
    cryptography
    configparser
    cffi
-   six
    pycparser
 
-If you have any problems installing these requirements, please let the 
-maintainer of this package know at https://bitbucket.com/nthmost/python-secureconfig
+If you have any problems installing these requirements, please let us know as a
+github issue at https://github.com/nthmost/python-secureconfig
 
 SecureConfigParser
 ------------------
-
-NEW SINCE 0.1.0:
 
 SecureConfigParser is a subclass of the configparser module's ConfigParser class.
 
@@ -308,20 +305,20 @@ Given the above, SecureString cannot at this time be implicity trusted as
 "secure", since so much depends upon how it's used.
 
 
-Future
-------
+Contributions
+-------------
 
-Planned features include::
+The home for SecureConfig is on github:
+https://github.com/nthmost/secureconfig
 
-- more automated-deployment-oriented utils
-- asymmetric key deployments (e.g. RSA public key encryption)
+If you'd like to contribute, please make sure you run the tests (I normally use pytest)
+found in the tests/ directory.  I might merge fixes into master but I won't update pypi
+with a new version unless ALL the tests pass.
 
+If you want to contribute a novel feature, please file it as an issue in the github repo
+so we can discuss it first!
 
-CONTACT
--------
-
-Look for @nthmost on bitbucket if you're interested and would like to contribute!
 Comments, critiques, and bug reports warmly welcomed.  Pull requests encouraged.
 
---Naomi Most, spring 2014.
+--Naomi Most, 2014-2020 and onward.
 
